@@ -12,6 +12,7 @@ namespace DropInMultiplayer
     public static class BodyHelper
     {
         public static IEnumerable<SurvivorDef> _survivorBodies;
+
         public static IEnumerable<SurvivorDef> SurvivorBodies { 
             get
             {
@@ -27,7 +28,8 @@ namespace DropInMultiplayer
         {
             foreach (var survivor in SurvivorBodies)
             {
-                if (survivor.name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                if (survivor.name.Equals(name, StringComparison.InvariantCultureIgnoreCase) || 
+                    Language.GetString(survivor.displayNameToken).Equals(name, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return survivor;
                 }
@@ -36,22 +38,14 @@ namespace DropInMultiplayer
             return null;
         }
 
-        public static IEnumerable<string> GetSurvivorNames()
+        public static IEnumerable<string> GetSurvivorDisplayNames()
         {
-            return SurvivorBodies.Select(def => def.name);
+            return SurvivorBodies.Select(def => Language.GetString(def.displayNameToken));
         }
 
         public static GameObject FindBodyPrefab(string characterName)
         {
-            foreach (var survivorDef in SurvivorBodies)
-            {
-                if (survivorDef.name.Equals(characterName, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return survivorDef.bodyPrefab;
-                }
-            }
-
-            return null;
+            return LookupSurvior(characterName)?.bodyPrefab;
         }
     }
 }

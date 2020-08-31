@@ -1,0 +1,24 @@
+{
+    "ManifestVersion": 2,
+    "AuthorName": "niwith",
+    "Name": "niwith-DropinMultiplayer",
+    "DisplayName": "DropinMultiplayer",
+    "Version": "1.0.0",
+    "Licence": "",
+    "WebsiteURL": "https://github.com/niwith/DropInMultiplayer",
+    "Description": "Drop in and out of multiplayer with your friends. Automatically adds items to help you catch up. Now updated for the 1.0 patch!",
+    "GameVersion": "N/A",
+    "Dependencies": [
+		  "bbepis-BepInExPack-3.2.0",
+		  "tristanmcpherson-R2API-2.4.10"
+	  ],
+    "OptionalDependencies": [],
+    "Incompatibilities": [],
+    "NetworkMode": "both",
+    "PackageType": "mod",
+    "InstallMode": "managed",
+    "Loaders": [
+        "bepinex"
+    ],
+    "ExtraData": {}
+}

@@ -151,12 +151,13 @@
   <ItemGroup>
     <Compile Include="BodyHelper.cs" />
     <Compile Include="DropInMultiplayerConfig.cs" />
+    <Compile Include="ItemsHelper.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetPath)" "G:\SecondSteamThing\SteamApps\common\Risk of Rain 2\BepInEx\plugins\"
-</PostBuildEvent>
+copy /Y "$(TargetPath)" "C:\Repos\RiskRainMods\DropInMultiplayer\DaBois-DropinMultiplayer"</PostBuildEvent>
   </PropertyGroup>
 </Project>
