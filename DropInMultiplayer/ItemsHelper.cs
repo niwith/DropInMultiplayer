@@ -60,7 +60,6 @@ namespace DropInMultiplayer
         private static void AddToItemsToMatch(Inventory targetInventory, Inventory[] otherPlayerInventories, List<ItemIndex> itemTierList, ItemTier itemTier)
         {
             var difference =  (int) otherPlayerInventories.Average(inv => GetItemCountWithExclusions(inv, itemTier)) - GetItemCountWithExclusions(targetInventory, itemTier);
-            DropInMultiplayer.StaticLogger.LogInfo($"Difference in tier {itemTier} {difference}");
             for (int i = 0; i < difference; i++)
             {
                 targetInventory.GiveItem(GetRandomItem(itemTierList), 1);

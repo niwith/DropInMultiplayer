@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Evaisa.FallenFriends;
 using R2API.Utils;
 using RoR2;
 using RoR2.UI;
@@ -17,24 +18,19 @@ namespace DropInMultiplayer
     [BepInPlugin(guid, modName, version)]
     [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.evaisa.fallenfriends", BepInDependency.DependencyFlags.SoftDependency)]
     [R2APISubmoduleDependency(nameof(CommandHelper))]
     public class DropInMultiplayer : BaseUnityPlugin
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.1";
+        const string version = "1.0.2";
 
         private DropInMultiplayerConfig _config;
 
         private readonly Vector3 _spawnOffset = new Vector3(0, 1, 0);
 
-        public static DropInMultiplayer Instance { get; private set; }
-        public static ManualLogSource StaticLogger => Instance.Logger;
-
-        public DropInMultiplayer()
-        {
-            Instance = this;
-        }
+        private PluginInfo _fallenFriends = null;
 
         public void Awake()
         {
@@ -43,11 +39,28 @@ namespace DropInMultiplayer
             Logger.LogMessage("Drop-In Multiplayer Loaded!");
         }
 
+        public void Start()
+        {
+            try
+            {
+                if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.evaisa.fallenfriends", out var fallenFriendsPlugin))
+                {
+                    // _fallenFriends = fallenFriendsPlugin.Instance as FallenFriends;
+                    _fallenFriends = fallenFriendsPlugin;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogFatal(e.StackTrace);
+            }
+        }
+
         private void SetupHooks()
         {
             On.RoR2.Console.RunCmd += CheckChatForJoinRequest;
             On.RoR2.NetworkUser.Start += GreetNewPlayer;
             On.RoR2.Run.SetupUserCharacterMaster += GiveItems;
+            
 #if DEBUG
             Logger.LogWarning("You're on a debug build. If you see this after downloading from the thunderstore, panic!");
             //This is so we can connect to ourselves.
@@ -98,7 +111,7 @@ namespace DropInMultiplayer
         private void GiveItems(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run run, NetworkUser user)
         {
             orig(run, user);
-
+            
             if (!_config.StartWithItems ||
                 !run.isServer || // If we are not the server don't try to give items, let the server handle it
                 run.fixedTime < 5f) // Don't try to give items to players who spawn with the server
@@ -117,6 +130,27 @@ namespace DropInMultiplayer
                 Debug.Log("Giving averaged items");
                 ItemsHelper.GiveAveragedItems(user, _config.GiveRedItems, _config.GiveLunarItems, _config.GiveBossItems);
             }
+        }
+
+        private void ChangeOrSetCharacter(NetworkUser player, GameObject bodyPrefab, bool firstTimeJoining)
+        {
+            var master = player.master;
+            master.bodyPrefab = bodyPrefab;
+            _fallenFriends?.Instance.InvokeMethod("setOldPrefab", master);
+            //_fallenFriends?.setOldPrefab(master);
+            CharacterBody body;
+            if (firstTimeJoining)
+            {
+                var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
+                body = master.SpawnBody(bodyPrefab, spawnTransform.position + _spawnOffset, spawnTransform.rotation);               
+                Run.instance.HandlePlayerFirstEntryAnimation(body, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
+            }
+            else
+            {
+                body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
+            }
+            
+            AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
         }
 
         private void JoinAs(NetworkUser user, string characterName, string username)
@@ -172,22 +206,7 @@ namespace DropInMultiplayer
                 //Now that we've made sure the person can join, let's give them a CharacterMaster.
                 Run.instance.OnUserAdded(user);
 
-                var master = player.master;
-
-                // CharacterMasters aren't made for each survivor, they all use the same master.
-                // So we're gonna have to set the CharacterMaster's bodyPrefab to the prefab the person using join_as requested.
-                master.bodyPrefab = bodyPrefab;
-
-                //Offset for players so they don't spawn in the ground.
-                var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
-
-                // Get our CharacterBody.
-                var body = master.SpawnBody(bodyPrefab, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
-                //Now handle the player's enterance animation with our new CharacterBody.
-                Run.instance.HandlePlayerFirstEntryAnimation(body, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
-
-                // Inform the chat that the person using join_as is spawning as what they requested.
-                AddChatMessage(player.userName + " is spawning as " + body.GetDisplayName() + "!");
+                ChangeOrSetCharacter(player, bodyPrefab, true);
 
                 // Turn this back off again so a new player isn't immediatly dropped in without getting to pick their character
                 Run.instance.SetFieldValue("allowNewParticipants", false);
@@ -196,16 +215,14 @@ namespace DropInMultiplayer
             {
                 if (!_config.AllowReJoinAs)
                 {
-                    AddChatMessage("Sorry " + player.userName + "! The host has made it so you can't use join_as while after selecting character.");
+                    AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as while after selecting character.");
                 }
                 else
                 {
                     var master = player.master;
                     if (master.hasBody)
                     {
-                        master.bodyPrefab = bodyPrefab;
-                        master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
-                        AddChatMessage(player.userName + " is respawning as " + Language.GetString(bodyPrefab.GetComponent<CharacterBody>().baseNameToken) + "!");
+                        ChangeOrSetCharacter(player, bodyPrefab, false);
                     }
                 }
             }

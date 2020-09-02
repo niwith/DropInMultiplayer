@@ -4,12 +4,13 @@ This mod allows the host to have players join mid-game, and automatically gives 
 
 If you have any bug reports, ping me on the modding discord (https://discord.gg/MfQtGYj), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
 
-I updated this mod from the original https://thunderstore.io/package/SushiDev/DropinMultiplayer/ mod as it has not been updated for 1.0. If the original mod creator, or anyone else who is better at modding than I am, is putting up a better version of this mod let me know and I'll depricate. 
+I updated this mod from the original https://thunderstore.io/package/SushiDev/DropinMultiplayer/ mod as it has not been updated for 1.0. If the original mod creator, or anyone else who is better at modding than I am, is putting up a better version of this mod let me know and I'll deprecate this version. 
 
 
 ### Commands Examples
+These commands should be sent into the game chat (not the console)
   1. join_as Commando = Spawns you in as commando.
-  2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to turn into huntress/whatever in the names list .
+  2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list
   
 # Installation (Mod Manager)
  1. Click the install with Mod Manager button
@@ -19,6 +20,13 @@ I updated this mod from the original https://thunderstore.io/package/SushiDev/Dr
 # Installation (Manual)
  1. Extract "DropInMultiplayer.dll" from the zip file and place it into  "/Risk of Rain 2/BepInEx/plugins/" folder.
  2. Done
- 
-### 1.0.0---
+
+### 1.0.2
+* Fix for interaction with FallenFriends, not longer breaks join_as if you have FallenFriends installed
+
+
+### 1.0.1
+* Added option for join_as after character select (letting players change characters). Defaults to false
+
+### 1.0.0
 * Release a probably broken build
