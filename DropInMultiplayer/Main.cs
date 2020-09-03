@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -24,7 +25,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.2";
+        const string version = "1.0.4";
 
         private DropInMultiplayerConfig _config;
 
@@ -60,7 +61,7 @@ namespace DropInMultiplayer
             On.RoR2.Console.RunCmd += CheckChatForJoinRequest;
             On.RoR2.NetworkUser.Start += GreetNewPlayer;
             On.RoR2.Run.SetupUserCharacterMaster += GiveItems;
-            
+
 #if DEBUG
             Logger.LogWarning("You're on a debug build. If you see this after downloading from the thunderstore, panic!");
             //This is so we can connect to ourselves.
@@ -111,7 +112,7 @@ namespace DropInMultiplayer
         private void GiveItems(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run run, NetworkUser user)
         {
             orig(run, user);
-            
+
             if (!_config.StartWithItems ||
                 !run.isServer || // If we are not the server don't try to give items, let the server handle it
                 run.fixedTime < 5f) // Don't try to give items to players who spawn with the server
@@ -135,22 +136,50 @@ namespace DropInMultiplayer
         private void ChangeOrSetCharacter(NetworkUser player, GameObject bodyPrefab, bool firstTimeJoining)
         {
             var master = player.master;
+            var oldBody = master.GetBody();
+
             master.bodyPrefab = bodyPrefab;
-            _fallenFriends?.Instance.InvokeMethod("setOldPrefab", master);
-            //_fallenFriends?.setOldPrefab(master);
+            _fallenFriends?.Instance?.InvokeMethod("setOldPrefab", master);
+
             CharacterBody body;
             if (firstTimeJoining)
             {
                 var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
-                body = master.SpawnBody(bodyPrefab, spawnTransform.position + _spawnOffset, spawnTransform.rotation);               
+                body = master.SpawnBody(bodyPrefab, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
                 Run.instance.HandlePlayerFirstEntryAnimation(body, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
             }
             else
             {
+                
+                if (BodyCatalog.GetBodyName(oldBody.bodyIndex) == "CaptainBody")
+                {
+                    master.inventory.RemoveItem(ItemIndex.CaptainDefenseMatrix, 1);
+                }
+
+                if (bodyPrefab.name == "CaptainBody")
+                {
+                    master.inventory.GiveItem(ItemIndex.CaptainDefenseMatrix, 1);
+                }
                 body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
             }
-            
+
             AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private bool IsDronePlayer(NetworkUser player)
+        {
+            return FallenFriends.dronePlayers.Contains(player.master);
+        }
+
+        private bool IsDead(NetworkUser player)
+        {
+            bool isDrone = false;
+            if (_fallenFriends?.Instance != null)
+            {
+                isDrone = IsDronePlayer(player);
+            }
+            return !player.master.hasBody || isDrone;
         }
 
         private void JoinAs(NetworkUser user, string characterName, string username)
@@ -217,13 +246,13 @@ namespace DropInMultiplayer
                 {
                     AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as while after selecting character.");
                 }
+                else if (IsDead(player))
+                {
+                    AddChatMessage($"Sorry {player.userName}! You can't use join_as while dead.");
+                }
                 else
                 {
-                    var master = player.master;
-                    if (master.hasBody)
-                    {
-                        ChangeOrSetCharacter(player, bodyPrefab, false);
-                    }
+                    ChangeOrSetCharacter(player, bodyPrefab, false);
                 }
             }
         }

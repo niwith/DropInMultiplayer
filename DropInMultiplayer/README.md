@@ -21,6 +21,14 @@ These commands should be sent into the game chat (not the console)
  1. Extract "DropInMultiplayer.dll" from the zip file and place it into  "/Risk of Rain 2/BepInEx/plugins/" folder.
  2. Done
 
+### 1.0.4
+* Fixed issue preventing some modded characters from being selected (specifically BanditClassic)
+
+### 1.0.3
+* Fix for join_as from captain to any other class keeping his unique item
+* Fix for boss items preventing joining
+* Fix (hopefully) for join_as working while dead if you are controlling a drone (FallenFriends)
+
 ### 1.0.2
 * Fix for interaction with FallenFriends, not longer breaks join_as if you have FallenFriends installed
 

@@ -2,6 +2,7 @@
 using RoR2;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,9 @@ namespace DropInMultiplayer
     public static class ItemsHelper
     {
         private static List<ItemIndex> _bossItems;
-
+        private static List<ItemIndex> _validT3Items;
+        private static List<ItemIndex> _invalidT3Items = new List<ItemIndex> { ItemIndex.CaptainDefenseMatrix };
+        private static List<ItemIndex> _allInvalidItems = _invalidT3Items;
         static ItemsHelper()
         {
             On.RoR2.ItemCatalog.Init += AddBossItems;
@@ -21,7 +24,7 @@ namespace DropInMultiplayer
         private static void AddBossItems(On.RoR2.ItemCatalog.orig_Init orig_Init)
         {
             orig_Init();
-            _bossItems = ItemCatalog.allItems.Select(idx => ItemCatalog.GetItemDef(idx)).Where(item => item.tier == ItemTier.Boss).Select(item => item.itemIndex).ToList();
+            
         }
 
         private static ItemIndex GetRandomItem(IList<ItemIndex> items)
@@ -92,6 +95,10 @@ namespace DropInMultiplayer
             }
             if (includeBoss)
             { 
+                if (_bossItems == null)
+                {
+                    _bossItems = ItemCatalog.allItems.Select(idx => ItemCatalog.GetItemDef(idx)).Where(item => item.tier == ItemTier.Boss).Select(item => item.itemIndex).ToList();
+                }
                 AddToItemsToMatch(targetInventory, otherPlayerInventories, _bossItems, ItemTier.Boss);
             }
         }

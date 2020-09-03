@@ -1,4 +1,5 @@
-﻿using RoR2;
+﻿using BepInEx;
+using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,8 +29,9 @@ namespace DropInMultiplayer
         {
             foreach (var survivor in SurvivorBodies)
             {
-                if (survivor.name.Equals(name, StringComparison.InvariantCultureIgnoreCase) || 
-                    Language.GetString(survivor.displayNameToken).Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                var nameEqual = survivor.name != null && survivor.name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                var displayNameEqual = survivor.displayNameToken != null && Language.GetString(survivor.displayNameToken).Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                if (nameEqual || displayNameEqual)
                 {
                     return survivor;
                 }
