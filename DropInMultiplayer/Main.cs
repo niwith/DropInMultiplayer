@@ -17,7 +17,7 @@ using UnityEngine.SceneManagement;
 namespace DropInMultiplayer
 {
     [BepInPlugin(guid, modName, version)]
-    [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
+    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency("com.evaisa.fallenfriends", BepInDependency.DependencyFlags.SoftDependency)]
     [R2APISubmoduleDependency(nameof(CommandHelper))]
@@ -25,7 +25,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.4";
+        const string version = "1.0.5";
 
         private DropInMultiplayerConfig _config;
 
@@ -117,7 +117,6 @@ namespace DropInMultiplayer
                 !run.isServer || // If we are not the server don't try to give items, let the server handle it
                 run.fixedTime < 5f) // Don't try to give items to players who spawn with the server
             {
-                Debug.Log("We are not giving items for some reason, figure that out, might be we aint server");
                 return;
             }
 

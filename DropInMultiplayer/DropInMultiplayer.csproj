@@ -53,7 +53,7 @@
       <HintPath>..\..\Libs\BepInEx.Preloader.dll</HintPath>
     </Reference>
     <Reference Include="FallenFriends">
-      <HintPath>G:\SecondSteamThing\SteamApps\common\Risk of Rain 2\r2modman\BepInEx\plugins\evGiac-FallenFriends\FallenFriends.dll</HintPath>
+      <HintPath>..\..\Libs\FallenFriends.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>..\..\Libs\MMHOOK_Assembly-CSharp.dll</HintPath>
