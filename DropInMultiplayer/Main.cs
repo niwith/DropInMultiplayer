@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using Evaisa.FallenFriends;
 using R2API.Utils;
 using RoR2;
 using RoR2.UI;
@@ -19,7 +18,6 @@ namespace DropInMultiplayer
     [BepInPlugin(guid, modName, version)]
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-    [BepInDependency("com.evaisa.fallenfriends", BepInDependency.DependencyFlags.SoftDependency)]
     [R2APISubmoduleDependency(nameof(CommandHelper))]
     public class DropInMultiplayer : BaseUnityPlugin
     {
@@ -31,8 +29,6 @@ namespace DropInMultiplayer
 
         private readonly Vector3 _spawnOffset = new Vector3(0, 1, 0);
 
-        private PluginInfo _fallenFriends = null;
-
         public void Awake()
         {
             _config = new DropInMultiplayerConfig(Config);
@@ -42,18 +38,6 @@ namespace DropInMultiplayer
 
         public void Start()
         {
-            try
-            {
-                if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.evaisa.fallenfriends", out var fallenFriendsPlugin))
-                {
-                    // _fallenFriends = fallenFriendsPlugin.Instance as FallenFriends;
-                    _fallenFriends = fallenFriendsPlugin;
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogFatal(e.StackTrace);
-            }
         }
 
         private void SetupHooks()
@@ -92,7 +76,37 @@ namespace DropInMultiplayer
                 {
                     string bodyString = userInput.ElementAtOrDefault(1) ?? "";
                     string userString = userInput.ElementAtOrDefault(2) ?? "";
+                    if (bodyString.Contains('"') && userString.Contains('"'))
+                    {
+                        string newstring = "";
+                        foreach (var item in bodyString)
+                        {
+                            if (item == '"')
+                            {
 
+                            }
+                            else 
+                            {
+                                newstring += item;
+                            }
+                        }
+                        bodyString = newstring;
+                        newstring = "";
+                        foreach (var item in userString)
+                        {
+                            if (item == '"')
+                            {
+
+                            }
+                            else
+                            {
+                                newstring += item;
+                            }
+                        }
+                        userString = newstring;
+                        bodyString = bodyString + " " + userString;
+                        userString = "";
+                    }
                     JoinAs(sender.networkUser, bodyString, userString);
                 }
             }
@@ -138,7 +152,6 @@ namespace DropInMultiplayer
             var oldBody = master.GetBody();
 
             master.bodyPrefab = bodyPrefab;
-            _fallenFriends?.Instance?.InvokeMethod("setOldPrefab", master);
 
             CharacterBody body;
             if (firstTimeJoining)
@@ -168,17 +181,12 @@ namespace DropInMultiplayer
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         private bool IsDronePlayer(NetworkUser player)
         {
-            return FallenFriends.dronePlayers.Contains(player.master);
+            return false;
         }
 
         private bool IsDead(NetworkUser player)
         {
-            bool isDrone = false;
-            if (_fallenFriends?.Instance != null)
-            {
-                isDrone = IsDronePlayer(player);
-            }
-            return !player.master.hasBody || isDrone;
+            return !player.master.hasBody;
         }
 
         private void JoinAs(NetworkUser user, string characterName, string username)
