@@ -74,38 +74,40 @@ namespace DropInMultiplayer
 
                 if (chatCommand.Equals("join_as", StringComparison.InvariantCultureIgnoreCase) || chatCommand.Equals("join", StringComparison.InvariantCultureIgnoreCase))
                 {
+                    List<string> data = userInput.ToList();
                     string bodyString = userInput.ElementAtOrDefault(1) ?? "";
-                    string userString = userInput.ElementAtOrDefault(2) ?? "";
+                    string userString = userInput.LastOrDefault() ?? "";
+                    string newstring = "";
+                    bool open = false;
                     if (bodyString.Contains('"') && userString.Contains('"'))
                     {
-                        string newstring = "";
-                        foreach (var item in bodyString)
+                        bodyString = "";
+                        for (int i = 1; i < data.Count; i++)
                         {
-                            if (item == '"')
+                            var str = data.ElementAt(i) ?? "";
+                            if (str == userInput.ElementAtOrDefault(1))
                             {
-
                             }
-                            else 
+                            foreach (var item in str)
                             {
-                                newstring += item;
+                                if (item == '"')
+                                {
+                                    open = open == false ? true : false;
+                                }
+                                else
+                                {
+                                    newstring += item;
+                                }
                             }
+                            bodyString += open == true ? newstring + " " : newstring;
+                            newstring = "";
                         }
-                        bodyString = newstring;
-                        newstring = "";
-                        foreach (var item in userString)
-                        {
-                            if (item == '"')
-                            {
-
-                            }
-                            else
-                            {
-                                newstring += item;
-                            }
-                        }
-                        userString = newstring;
-                        bodyString = bodyString + " " + userString;
                         userString = "";
+                    }
+                    else 
+                    {
+                        bodyString = userInput.ElementAtOrDefault(1) ?? "";
+                        userString = userInput.ElementAtOrDefault(2) ?? "";
                     }
                     JoinAs(sender.networkUser, bodyString, userString);
                 }
