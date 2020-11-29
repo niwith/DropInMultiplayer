@@ -24,7 +24,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.7";
+        const string version = "1.0.8";
 
         private DropInMultiplayerConfig _config;
 

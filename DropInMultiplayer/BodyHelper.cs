@@ -25,12 +25,19 @@ namespace DropInMultiplayer
             }
         }
 
+        private static bool CompareNameStringsNoSpaces(string compareFrom, string compareTo)
+        {
+            compareFrom = compareFrom.Replace(" ", string.Empty);
+            compareTo = compareTo.Replace(" ", string.Empty);
+            return compareFrom.Equals(compareTo, StringComparison.InvariantCultureIgnoreCase);
+        }
+
         public static SurvivorDef LookupSurvior(string name)
         {
             foreach (var survivor in SurvivorBodies)
             {
-                var nameEqual = survivor.name != null && survivor.name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
-                var displayNameEqual = survivor.displayNameToken != null && Language.GetString(survivor.displayNameToken).Equals(name, StringComparison.InvariantCultureIgnoreCase);
+                var nameEqual = survivor.name != null && CompareNameStringsNoSpaces(survivor.name, name);
+                var displayNameEqual = survivor.displayNameToken != null && CompareNameStringsNoSpaces(Language.GetString(survivor.displayNameToken), name);
                 if (nameEqual || displayNameEqual)
                 {
                     return survivor;
@@ -42,7 +49,7 @@ namespace DropInMultiplayer
 
         public static IEnumerable<string> GetSurvivorDisplayNames()
         {
-            return SurvivorBodies.Select(def => Language.GetString(def.displayNameToken));
+            return SurvivorBodies.Select(def => Language.GetString(def.displayNameToken).Replace(" ", string.Empty));
         }
 
         public static GameObject FindBodyPrefab(string characterName)
