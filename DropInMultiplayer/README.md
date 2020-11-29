@@ -21,6 +21,13 @@ These commands should be sent into the game chat (not the console)
  1. Extract "DropInMultiplayer.dll" from the zip file and place it into  "/Risk of Rain 2/BepInEx/plugins/" folder.
  2. Done
 
+### 1.0.7
+* Fixed bug which broke Captain's R ability and PlayerBots mod
+
+### 1.0.6
+* Added ability for other mods to temporarily block join_as if needed, shoot me a message if you need help setting that up
+* Added temporary block for join_as on the final stage to prevent soft lock
+
 ### 1.0.5
 * Fixed issue forcing all players to have the mod installed, you should now be able to have players without the mod use the join_as command in chat
 * Removed a debug log I left in, whoops

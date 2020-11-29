@@ -12,7 +12,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SceneManagement;
 
 namespace DropInMultiplayer
 {
@@ -25,13 +24,49 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.5";
+        const string version = "1.0.7";
 
         private DropInMultiplayerConfig _config;
 
         private readonly Vector3 _spawnOffset = new Vector3(0, 1, 0);
 
         private PluginInfo _fallenFriends = null;
+
+        /// <summary>
+        /// Temporary control to lock or unlock drop in, does not alter config setting
+        /// </summary>
+        public bool JoinAsBlocked => _blockingReasons.Any();
+        public readonly Dictionary<Guid, string> _blockingReasons = new Dictionary<Guid, string>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        public Guid BlockJoinAs(string reason)
+        {
+            var id = Guid.NewGuid();
+            _blockingReasons.Add(id, reason);
+            return id;
+        }
+
+        /// <summary>
+        /// Removes the blocker specified by the token from the blocking reasons, if all blockers are removed then join_as will
+        /// be enabled
+        /// </summary>
+        /// <param name="token"></param>
+        public void UnBlockJoinAs(Guid token)
+        {
+            _blockingReasons.Remove(token);
+        }
+
+        /// <summary>
+        /// Removes all join as blockers, don't use this unless you know what you are doing, other mods may have set blockers for a good reason
+        /// </summary>
+        public void ClearJoinAsBlockers()
+        {
+            _blockingReasons.Clear();
+        }
 
         public void Awake()
         {
@@ -61,6 +96,7 @@ namespace DropInMultiplayer
             On.RoR2.Console.RunCmd += CheckChatForJoinRequest;
             On.RoR2.NetworkUser.Start += GreetNewPlayer;
             On.RoR2.Run.SetupUserCharacterMaster += GiveItems;
+            On.RoR2.Run.OnServerSceneChanged += CheckStageForBlockJoinAs;
 
 #if DEBUG
             Logger.LogWarning("You're on a debug build. If you see this after downloading from the thunderstore, panic!");
@@ -73,6 +109,22 @@ namespace DropInMultiplayer
             //Step Four: Test whatever you were going to test.
             On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
 #endif
+        }
+
+        private Guid _blockingJoinForFinalStageToken = Guid.Empty;
+        private void CheckStageForBlockJoinAs(On.RoR2.Run.orig_OnServerSceneChanged orig, Run self, string sceneName)
+        {
+            orig(self, sceneName);
+            Debug.Log($"Marker: {_blockingJoinForFinalStageToken}");
+            if (sceneName.Equals("moon") && _blockingJoinForFinalStageToken.Equals(Guid.Empty))
+            {
+                _blockingJoinForFinalStageToken = BlockJoinAs("Cannot join on final stage, may softlock run");
+            }
+            else if (!_blockingJoinForFinalStageToken.Equals(Guid.Empty))
+            {
+                UnBlockJoinAs(_blockingJoinForFinalStageToken);
+                _blockingJoinForFinalStageToken = Guid.Empty;
+            }
         }
 
         private void CheckChatForJoinRequest(On.RoR2.Console.orig_RunCmd orig, RoR2.Console self, RoR2.Console.CmdSender sender, string concommandName, List<string> userArgs)
@@ -183,6 +235,7 @@ namespace DropInMultiplayer
 
         private void JoinAs(NetworkUser user, string characterName, string username)
         {
+
             if (!_config.JoinAsEnabled)
             {
                 Logger.LogWarning("JoinAs :: SpawnAsEnabled.Value disabled. Returning...");
@@ -196,6 +249,12 @@ namespace DropInMultiplayer
                     Logger.LogWarning("JoinAs :: HostOnlySpawnAs.Value enabled and the person using join_as isn't host. Returning!");
                     return;
                 }
+            }
+
+            if (JoinAsBlocked)
+            {
+                SendJoinAsBlockedMessage();
+                return;
             }
 
             //Finding the NetworkUser from the person who is using the command.
@@ -254,6 +313,12 @@ namespace DropInMultiplayer
                     ChangeOrSetCharacter(player, bodyPrefab, false);
                 }
             }
+        }
+
+        private void SendJoinAsBlockedMessage()
+        {
+            var reasons = string.Join(", ", _blockingReasons.Select(r => r.Value));
+            AddChatMessage($"Sorry, join as is temporarily disabled for the following reason(s): {reasons}");
         }
 
         private NetworkUser GetNetUserFromString(string playerString)
