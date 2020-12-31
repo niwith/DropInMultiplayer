@@ -14,8 +14,8 @@ namespace DropInMultiplayer
     {
         private static List<ItemIndex> _bossItems;
         private static List<ItemIndex> _validT3Items;
-        private static List<ItemIndex> _invalidT3Items = new List<ItemIndex> { ItemIndex.CaptainDefenseMatrix };
-        private static List<ItemIndex> _allInvalidItems = _invalidT3Items.Union(new List<ItemIndex>() { ItemIndex.CaptainDefenseMatrix, ItemIndex.Pearl, ItemIndex.ShinyPearl, ItemIndex.TitanGoldDuringTP, ItemIndex.ScrapYellow, ItemIndex.ArtifactKey }).ToList();
+        private static List<ItemIndex> _invalidT3Items = new List<ItemIndex> { ItemIndex.CaptainDefenseMatrix, ItemIndex.ScrapRed };
+        private static List<ItemIndex> _allInvalidItems = _invalidT3Items.Union(new List<ItemIndex>() { ItemIndex.Pearl, ItemIndex.ShinyPearl, ItemIndex.TitanGoldDuringTP, ItemIndex.ArtifactKey, ItemIndex.ScrapYellow, ItemIndex.ScrapWhite, ItemIndex.ScrapGreen }).ToList();
         static ItemsHelper()
         {
             On.RoR2.ItemCatalog.Init += AddBossItems;
