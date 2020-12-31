@@ -15,7 +15,7 @@ namespace DropInMultiplayer
         private static List<ItemIndex> _bossItems;
         private static List<ItemIndex> _validT3Items;
         private static List<ItemIndex> _invalidT3Items = new List<ItemIndex> { ItemIndex.CaptainDefenseMatrix };
-        private static List<ItemIndex> _allInvalidItems = _invalidT3Items;
+        private static List<ItemIndex> _allInvalidItems = _invalidT3Items.Union(new List<ItemIndex>() { ItemIndex.CaptainDefenseMatrix, ItemIndex.Pearl, ItemIndex.ShinyPearl, ItemIndex.TitanGoldDuringTP, ItemIndex.ScrapYellow, ItemIndex.ArtifactKey }).ToList();
         static ItemsHelper()
         {
             On.RoR2.ItemCatalog.Init += AddBossItems;
@@ -62,10 +62,11 @@ namespace DropInMultiplayer
 
         private static void AddToItemsToMatch(Inventory targetInventory, Inventory[] otherPlayerInventories, List<ItemIndex> itemTierList, ItemTier itemTier)
         {
+            var filteredList = itemTierList.Except(_allInvalidItems).ToArray();
             var difference =  (int) otherPlayerInventories.Average(inv => GetItemCountWithExclusions(inv, itemTier)) - GetItemCountWithExclusions(targetInventory, itemTier);
             for (int i = 0; i < difference; i++)
             {
-                targetInventory.GiveItem(GetRandomItem(itemTierList), 1);
+                targetInventory.GiveItem(GetRandomItem(filteredList), 1);
             }
         }
 
