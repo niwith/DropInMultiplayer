@@ -24,7 +24,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.8";
+        const string version = "1.0.10";
 
         private DropInMultiplayerConfig _config;
 
@@ -39,7 +39,8 @@ namespace DropInMultiplayer
         public readonly Dictionary<Guid, string> _blockingReasons = new Dictionary<Guid, string>();
 
         /// <summary>
-        /// 
+        /// Adds a new reason to block join_as command. Save the guid somewhere, or your mod will not be able to
+        /// unblock the join_as.
         /// </summary>
         /// <param name="reason"></param>
         /// <returns></returns>
@@ -51,8 +52,8 @@ namespace DropInMultiplayer
         }
 
         /// <summary>
-        /// Removes the blocker specified by the token from the blocking reasons, if all blockers are removed then join_as will
-        /// be enabled
+        /// Removes the blocker specified by the token from the blocking reasons, if all blockers are removed then 
+        /// join_as will be enabled
         /// </summary>
         /// <param name="token"></param>
         public void UnBlockJoinAs(Guid token)
@@ -68,6 +69,19 @@ namespace DropInMultiplayer
             _blockingReasons.Clear();
         }
 
+        /// <summary>
+        /// Adds the given items to the list of items which should not be dropped to a player when joining
+        /// </summary>
+        /// <param name="items">Items to add to the invalid list</param>
+        /// <param name="alsoInvalidForCount">When set to true will also add the items to the list of items to ingore
+        /// when counting the number of items a player has (e.g. by default the captain's defense matrix doesn't count 
+        /// towards if a newly joining captain gets a new red item nor does it count towards the average number of
+        /// red items for another newly joining player)</param>
+        public static void AddInvalidItems(IEnumerable<ItemIndex> items, bool alsoInvalidForCount = false)
+        {
+            ItemsHelper.AddInvalidItems(items, alsoInvalidForCount);
+        }
+
         public void Awake()
         {
             _config = new DropInMultiplayerConfig(Config);
@@ -81,7 +95,6 @@ namespace DropInMultiplayer
             {
                 if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.evaisa.fallenfriends", out var fallenFriendsPlugin))
                 {
-                    // _fallenFriends = fallenFriendsPlugin.Instance as FallenFriends;
                     _fallenFriends = fallenFriendsPlugin;
                 }
             }

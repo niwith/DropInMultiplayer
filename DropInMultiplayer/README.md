@@ -4,22 +4,32 @@ This mod allows the host to have players join mid-game, and automatically gives 
 
 If you have any bug reports, ping me on the modding discord (https://discord.gg/MfQtGYj), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
 
-I updated this mod from the original https://thunderstore.io/package/SushiDev/DropinMultiplayer/ mod as it has not been updated for 1.0. If the original mod creator, or anyone else who is better at modding than I am, is putting up a better version of this mod let me know and I'll deprecate this version. 
+Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
 
 ### Commands Examples
 These commands should be sent into the game chat (not the console)
   1. join_as Commando = Spawns you in as commando.
   2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list
-  
+ 
+
 # Installation (Mod Manager)
  1. Click the install with Mod Manager button
  2. Done
- 
   
 # Installation (Manual)
  1. Extract "DropInMultiplayer.dll" from the zip file and place it into  "/Risk of Rain 2/BepInEx/plugins/" folder.
  2. Done
+
+# Changelog
+
+### 1.0.10
+* Made the code a little more friendly for other mods to interface with
+* Devs looking to block certain items from dropping should check out the DropInMultiplayer.AddInvalidItems(...) method (and/or send me a message)
+* Devs looking to temporily block the join_as command should check out the DropInMultiplayer.BlockJoinAs(...) method (and/or send me a message)
+
+### 1.0.9
+* Filtered out illegal items from possible drops on joining game, big thanks to paddywaan (https://github.com/paddywaan) for submitting the pull request
 
 ### 1.0.8
 * Added support for custom characters which have spaces in their names (just type the name without a space, e.g. join_as ClayTemplar)
@@ -45,7 +55,6 @@ These commands should be sent into the game chat (not the console)
 
 ### 1.0.2
 * Fix for interaction with FallenFriends, not longer breaks join_as if you have FallenFriends installed
-
 
 ### 1.0.1
 * Added option for join_as after character select (letting players change characters). Defaults to false
