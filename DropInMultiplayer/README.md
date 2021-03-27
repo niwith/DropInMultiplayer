@@ -33,7 +33,8 @@ These commands should be sent into the game chat (not the console)
 
 # Changelog
 
-
+### 1.0.13
+* Fixed networking bug (don't use 1.0.12 its very broken)
 
 ### 1.0.12
 * Hotfix for Risk of Rain 2 - Anniversary Update - March 25, 2021 
