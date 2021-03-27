@@ -6,4 +6,4 @@ xcopy /Y %~dp0bin\Debug\manifest.json %~dp0DebugOutput
 xcopy /Y %~dp0bin\Debug\icon.png %~dp0DebugOutput
 xcopy /Y %~dp0bin\Debug\README.md %~dp0DebugOutput
 powershell "Get-ChildItem .\DebugOutput\ | Compress-Archive -DestinationPath DebugOutput\DropInMultiplayer.zip -Update"
-exit 0 
+pause

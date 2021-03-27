@@ -33,6 +33,9 @@ These commands should be sent into the game chat (not the console)
 
 # Changelog
 
+### 1.0.14
+* Fixed players being able to join on final stage and soft locking the game
+
 ### 1.0.13
 * Fixed networking bug (don't use 1.0.12 its very broken)
 

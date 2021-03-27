@@ -6,4 +6,4 @@ xcopy /Y %~dp0bin\Release\manifest.json %~dp0ReleaseOutput
 xcopy /Y %~dp0bin\Release\icon.png %~dp0ReleaseOutput
 xcopy /Y %~dp0bin\Release\README.md %~dp0ReleaseOutput
 powershell "Get-ChildItem .\ReleaseOutput\ | Compress-Archive -DestinationPath ReleaseOutput\DropInMultiplayer.zip -Update"
-exit 0 
+pause

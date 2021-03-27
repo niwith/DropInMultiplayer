@@ -24,7 +24,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.13";
+        const string version = "1.0.14";
 
         private DropInMultiplayerConfig _config;
 
@@ -47,6 +47,7 @@ namespace DropInMultiplayer
         public Guid BlockJoinAs(string reason)
         {
             var id = Guid.NewGuid();
+            // Logger.LogInfo($"DropInMultiplayer :: Adding JoinAs Blocker with token {id} and blocker reason {reason}");
             _blockingReasons.Add(id, reason);
             return id;
         }
@@ -58,6 +59,7 @@ namespace DropInMultiplayer
         /// <param name="token"></param>
         public void UnBlockJoinAs(Guid token)
         {
+            // Logger.LogInfo($"DropInMultiplayer :: Removing JoinAs Blocker with token {token} and blocker reason {_blockingReasons[token]}");
             _blockingReasons.Remove(token);
         }
 
@@ -128,8 +130,7 @@ namespace DropInMultiplayer
         private void CheckStageForBlockJoinAs(On.RoR2.Run.orig_OnServerSceneChanged orig, Run self, string sceneName)
         {
             orig(self, sceneName);
-            Debug.Log($"Marker: {_blockingJoinForFinalStageToken}");
-            if (sceneName.Equals("moon") && _blockingJoinForFinalStageToken.Equals(Guid.Empty))
+            if ((sceneName.Equals("moon") || sceneName.Equals("moon2")) && _blockingJoinForFinalStageToken.Equals(Guid.Empty))
             {
                 _blockingJoinForFinalStageToken = BlockJoinAs("Cannot join on final stage, may softlock run");
             }
@@ -187,12 +188,10 @@ namespace DropInMultiplayer
 
             if (_config.GiveExactItems)
             {
-                Debug.Log("Giving exact items");
                 ItemsHelper.CopyItemsFromRandom(user);
             }
             else
             {
-                Debug.Log("Giving averaged items");
                 ItemsHelper.GiveAveragedItems(user, _config.GiveRedItems, _config.GiveLunarItems, _config.GiveBossItems);
             }
         }
@@ -251,7 +250,7 @@ namespace DropInMultiplayer
 
             if (!_config.JoinAsEnabled)
             {
-                Logger.LogWarning("JoinAs :: SpawnAsEnabled.Value disabled. Returning...");
+                Logger.LogWarning("DropInMultiplayer :: Join_As disabled. Returning...");
                 return;
             }
 
@@ -259,7 +258,7 @@ namespace DropInMultiplayer
             {
                 if (NetworkUser.readOnlyInstancesList[0].netId != user.netId)
                 {
-                    Logger.LogWarning("JoinAs :: HostOnlySpawnAs.Value enabled and the person using join_as isn't host. Returning!");
+                    Logger.LogWarning("DropInMultiplayer :: HostOnlySpawnAs is enabled and the person using join_as isn't host. Returning!");
                     return;
                 }
             }
@@ -294,7 +293,7 @@ namespace DropInMultiplayer
             if (!bodyPrefab)
             {
                 AddChatMessage($"Sorry {player.userName} couldn't find {characterName}. Availible survivors are: {string.Join(", ", BodyHelper.GetSurvivorDisplayNames())}");
-                Logger.LogWarning("JoinAs :: Sent message to player informing them that what they requested to join as does not exist. Also bodyPrefab does not exist, returning!");
+                Logger.LogWarning("DropInMultiplayer :: Sent message to player informing them that what they requested to join as does not exist. Also bodyPrefab does not exist, returning!");
                 return;
             }
 
