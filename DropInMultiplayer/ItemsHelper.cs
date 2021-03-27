@@ -13,13 +13,13 @@ namespace DropInMultiplayer
     internal static class ItemsHelper
     {
         private static readonly HashSet<ItemIndex> _allInvalidDropItems = new HashSet<ItemIndex>() { 
-            ItemIndex.CaptainDefenseMatrix, // Character unique items
-            ItemIndex.Pearl, ItemIndex.ShinyPearl, // Pearls
-            ItemIndex.TitanGoldDuringTP, ItemIndex.ArtifactKey, 
-            ItemIndex.InvadingDoppelganger, // Honestly don't know what this is, does it cause the doppleganger to spawn?
-            ItemIndex.ScrapYellow, ItemIndex.ScrapWhite, ItemIndex.ScrapGreen, ItemIndex.ScrapRed // Scap
+            RoR2Content.Items.CaptainDefenseMatrix.itemIndex, // Character unique items
+            RoR2Content.Items.Pearl.itemIndex, RoR2Content.Items.ShinyPearl.itemIndex, // Pearls
+            RoR2Content.Items.TitanGoldDuringTP.itemIndex, RoR2Content.Items.ArtifactKey.itemIndex, 
+            RoR2Content.Items.InvadingDoppelganger.itemIndex, // Honestly don't know what this is, does it cause the doppleganger to spawn?
+            RoR2Content.Items.ScrapYellow.itemIndex, RoR2Content.Items.ScrapWhite.itemIndex, RoR2Content.Items.ScrapGreen.itemIndex, RoR2Content.Items.ScrapRed.itemIndex // Scap
         };
-        private static readonly HashSet<ItemIndex> _allInvalidCountItems = new HashSet<ItemIndex>() { ItemIndex.CaptainDefenseMatrix };
+        private static readonly HashSet<ItemIndex> _allInvalidCountItems = new HashSet<ItemIndex>() { RoR2Content.Items.CaptainDefenseMatrix.itemIndex };
 
         private static List<ItemIndex> _bossItems; // cache for boss items (boss items initialised later)
         

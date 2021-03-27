@@ -24,7 +24,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.10";
+        const string version = "1.0.12";
 
         private DropInMultiplayerConfig _config;
 
@@ -209,7 +209,7 @@ namespace DropInMultiplayer
             if (firstTimeJoining)
             {
                 var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
-                body = master.SpawnBody(bodyPrefab, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
+                body = master.SpawnBody(spawnTransform.position + _spawnOffset, spawnTransform.rotation);
                 Run.instance.HandlePlayerFirstEntryAnimation(body, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
             }
             else
@@ -217,12 +217,12 @@ namespace DropInMultiplayer
                 
                 if (BodyCatalog.GetBodyName(oldBody.bodyIndex) == "CaptainBody")
                 {
-                    master.inventory.RemoveItem(ItemIndex.CaptainDefenseMatrix, 1);
+                    master.inventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix.itemIndex, 1);
                 }
 
                 if (bodyPrefab.name == "CaptainBody")
                 {
-                    master.inventory.GiveItem(ItemIndex.CaptainDefenseMatrix, 1);
+                    master.inventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix.itemIndex, 1);
                 }
                 body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
             }
@@ -315,7 +315,7 @@ namespace DropInMultiplayer
             {
                 if (!_config.AllowReJoinAs)
                 {
-                    AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as while after selecting character.");
+                    AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as after selecting character.");
                 }
                 else if (IsDead(player))
                 {

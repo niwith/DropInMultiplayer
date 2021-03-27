@@ -1,11 +1,21 @@
 # DropinMultiplayer
-The drop in multiplayer mod for Risk of Rain 2, now updated for the 1.0 update!
+The drop in multiplayer mod for Risk of Rain 2!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
 If you have any bug reports, ping me on the modding discord (https://discord.gg/MfQtGYj), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
 
 Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
+
+### How to Join Existing Game
+  1. Go to steam friends list
+  2. Click the little arrow next to your friend's name
+  3. Click the "Join Friend" button
+  4. You will now be loaded into spectator mode in Risk of Rain 2
+  5. Press enter to open chat and type your join as command, e.g.
+	* join_as Commando
+	* join_as Huntress
+	* join_as Captain
 
 ### Commands Examples
 These commands should be sent into the game chat (not the console)
@@ -22,6 +32,11 @@ These commands should be sent into the game chat (not the console)
  2. Done
 
 # Changelog
+
+
+
+### 1.0.12
+* Hotfix for Risk of Rain 2 - Anniversary Update - March 25, 2021 
 
 ### 1.0.10
 * Made the code a little more friendly for other mods to interface with

@@ -19,7 +19,9 @@ namespace DropInMultiplayer
             {
                 if (_survivorBodies == null)
                 {
-                    _survivorBodies = SurvivorCatalog.allSurvivorDefs.Where(def => def.bodyPrefab).ToArray();
+                    _survivorBodies = SurvivorCatalog.allSurvivorDefs
+                        .Where(def => !def.hidden)
+                        .ToArray();
                 }
                 return _survivorBodies;
             }
@@ -36,7 +38,7 @@ namespace DropInMultiplayer
         {
             foreach (var survivor in SurvivorBodies)
             {
-                var nameEqual = survivor.name != null && CompareNameStringsNoSpaces(survivor.name, name);
+                var nameEqual = survivor.cachedName != null && CompareNameStringsNoSpaces(survivor.cachedName, name);
                 var displayNameEqual = survivor.displayNameToken != null && CompareNameStringsNoSpaces(Language.GetString(survivor.displayNameToken), name);
                 if (nameEqual || displayNameEqual)
                 {
