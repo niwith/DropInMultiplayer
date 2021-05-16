@@ -46,9 +46,6 @@
     <Reference Include="BepInEx.Preloader">
       <HintPath>..\..\Libs\BepInEx.Preloader.dll</HintPath>
     </Reference>
-    <Reference Include="FallenFriends">
-      <HintPath>..\..\Libs\FallenFriends.dll</HintPath>
-    </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>..\..\Libs\MMHOOK_Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -106,6 +103,7 @@
   <ItemGroup>
     <Compile Include="BodyHelper.cs" />
     <Compile Include="DropInMultiplayerConfig.cs" />
+    <Compile Include="HelperExtensions.cs" />
     <Compile Include="ItemsHelper.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

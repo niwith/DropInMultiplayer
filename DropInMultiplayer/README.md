@@ -33,6 +33,14 @@ These commands should be sent into the game chat (not the console)
 
 # Changelog
 
+### 1.0.16
+* Added dependancy back for R2API
+* Only host should need the mod now, and this should work with clients playing vanilla or modded. If it doesn't work, shoot @niwith a ping on the modding discord and I will cry and then fix it
+
+### 1.0.15
+* Removed dependancy on R2API
+* Removed support for FallenFriends (since the mod has been depricated)
+
 ### 1.0.14
 * Fixed players being able to join on final stage and soft locking the game
 

@@ -1,10 +1,10 @@
 {
   "name": "DropinMultiplayer",
-  "version_number": "1.0.14",
+  "version_number": "1.0.16",
   "website_url": "https://github.com/niwith/DropInMultiplayer",
   "description": "Drop in and out of multiplayer with your friends. Automatically adds items to help you catch up.",
   "dependencies": [
     "bbepis-BepInExPack-5.3.1",
-    "tristanmcpherson-R2API-2.5.14"
+    "tristanmcpherson-R2API-3.0.0"
   ]
 }

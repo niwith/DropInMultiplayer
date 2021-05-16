@@ -1,10 +1,6 @@
 ﻿using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Logging;
-using Evaisa.FallenFriends;
 using R2API.Utils;
 using RoR2;
-using RoR2.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,21 +12,17 @@ using UnityEngine.Networking;
 namespace DropInMultiplayer
 {
     [BepInPlugin(guid, modName, version)]
-    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
-    [BepInDependency("com.evaisa.fallenfriends", BepInDependency.DependencyFlags.SoftDependency)]
-    [R2APISubmoduleDependency(nameof(CommandHelper))]
+    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
     public class DropInMultiplayer : BaseUnityPlugin
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.14";
+        const string version = "1.0.16";
 
         private DropInMultiplayerConfig _config;
 
         private readonly Vector3 _spawnOffset = new Vector3(0, 1, 0);
-
-        private PluginInfo _fallenFriends = null;
 
         /// <summary>
         /// Temporary control to lock or unlock drop in, does not alter config setting
@@ -89,21 +81,6 @@ namespace DropInMultiplayer
             _config = new DropInMultiplayerConfig(Config);
             SetupHooks();
             Logger.LogMessage("Drop-In Multiplayer Loaded!");
-        }
-
-        public void Start()
-        {
-            try
-            {
-                if (BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.evaisa.fallenfriends", out var fallenFriendsPlugin))
-                {
-                    _fallenFriends = fallenFriendsPlugin;
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogFatal(e.StackTrace);
-            }
         }
 
         private void SetupHooks()
@@ -202,7 +179,6 @@ namespace DropInMultiplayer
             var oldBody = master.GetBody();
 
             master.bodyPrefab = bodyPrefab;
-            _fallenFriends?.Instance?.InvokeMethod("setOldPrefab", master);
 
             CharacterBody body;
             if (firstTimeJoining)
@@ -229,20 +205,9 @@ namespace DropInMultiplayer
             AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private bool IsDronePlayer(NetworkUser player)
-        {
-            return FallenFriends.dronePlayers.Contains(player.master);
-        }
-
         private bool IsDead(NetworkUser player)
         {
-            bool isDrone = false;
-            if (_fallenFriends?.Instance != null)
-            {
-                isDrone = IsDronePlayer(player);
-            }
-            return !player.master.hasBody || isDrone;
+            return !player.master.hasBody;
         }
 
         private void JoinAs(NetworkUser user, string characterName, string username)
@@ -343,7 +308,7 @@ namespace DropInMultiplayer
                     {
                         return NetworkUser.readOnlyInstancesList[result];
                     }
-                    Logger.LogError("Specified player index does not exist");
+                    Logger.LogError("DropInMultiplayer :: Specified player index does not exist");
                     return null;
                 }
                 else
