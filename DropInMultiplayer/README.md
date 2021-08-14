@@ -2,7 +2,7 @@
 The drop in multiplayer mod for Risk of Rain 2!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
-If you have any bug reports, ping me on the modding discord (https://discord.gg/MfQtGYj), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
+If you have any bug reports, ping me on the modding discord (https://discord.gg/5MbXZvd), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
 
 Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
