@@ -1,4 +1,5 @@
 ﻿using RoR2;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,31 +7,12 @@ namespace DropInMultiplayer
 {
     internal static class ItemsHelper
     {
-        private static readonly HashSet<ItemIndex> _allInvalidDropItems = new HashSet<ItemIndex>() { 
-            RoR2Content.Items.CaptainDefenseMatrix.itemIndex, // Character unique items
-            RoR2Content.Items.Pearl.itemIndex, RoR2Content.Items.ShinyPearl.itemIndex, // Pearls
-            RoR2Content.Items.TitanGoldDuringTP.itemIndex, RoR2Content.Items.ArtifactKey.itemIndex, 
-            RoR2Content.Items.InvadingDoppelganger.itemIndex, // Honestly don't know what this is, does it cause the doppleganger to spawn?
-            RoR2Content.Items.ScrapYellow.itemIndex, RoR2Content.Items.ScrapWhite.itemIndex, RoR2Content.Items.ScrapGreen.itemIndex, RoR2Content.Items.ScrapRed.itemIndex // Scap
-        };
-        private static readonly HashSet<ItemIndex> _allInvalidCountItems = new HashSet<ItemIndex>() { RoR2Content.Items.CaptainDefenseMatrix.itemIndex };
+        private static readonly Random _rand = new Random();
 
-        private static List<ItemIndex> _bossItems; // cache for boss items (boss items initialised later)
-        
+        [Obsolete("No longer required, items to be dropped are now pulled dynamically from run instance")]
         internal static void AddInvalidItems(IEnumerable<ItemIndex> items, bool alsoInvalidForCount = false)
         {
-            foreach (var item in items)
-            {
-                _allInvalidDropItems.Add(item);
-            }
-
-            if (alsoInvalidForCount)
-            {
-                foreach (var item in items)
-                {
-                    _allInvalidCountItems.Add(item);
-                }
-            }
+            return;
         }
 
         internal static void CopyItemsFromRandom(NetworkUser joiningPlayer)
@@ -57,68 +39,58 @@ namespace DropInMultiplayer
                 .Where(player => !player.id.Equals(joiningPlayer.id) && player?.master?.inventory != null) // Don't include self or any other players who don't have a character
                 .Select(p => p.master.inventory)
                 .ToArray();
-            
+
             if (targetInventory == null || // The new player does not have character yet
                 otherPlayerInventories.Length <= 0) // We are the only player
             {
                 return;
             }
 
-            AddToItemsToMatch(targetInventory, otherPlayerInventories, ItemCatalog.tier1ItemList, ItemTier.Tier1);
-            AddToItemsToMatch(targetInventory, otherPlayerInventories, ItemCatalog.tier2ItemList, ItemTier.Tier2);
+            AddToItemsToMatch(targetInventory, otherPlayerInventories, Run.instance.availableTier1DropList.Select(item => PickupCatalog.GetPickupDef(item).itemIndex), ItemTier.Tier1);
+            AddToItemsToMatch(targetInventory, otherPlayerInventories, Run.instance.availableTier2DropList.Select(item => PickupCatalog.GetPickupDef(item).itemIndex), ItemTier.Tier2);
             if (includeRed)
             {
-                AddToItemsToMatch(targetInventory, otherPlayerInventories, ItemCatalog.tier3ItemList, ItemTier.Tier3);
+                AddToItemsToMatch(targetInventory, otherPlayerInventories, Run.instance.availableTier3DropList.Select(item => PickupCatalog.GetPickupDef(item).itemIndex), ItemTier.Tier3);
             }
             if (includeLunar)
             {
-                AddToItemsToMatch(targetInventory, otherPlayerInventories, ItemCatalog.lunarItemList, ItemTier.Lunar);
+                AddToItemsToMatch(targetInventory, otherPlayerInventories, Run.instance.availableLunarDropList.Select(item => PickupCatalog.GetPickupDef(item).itemIndex), ItemTier.Lunar);
             }
             if (includeBoss)
-            { 
-                if (_bossItems == null)
-                {
-                    _bossItems = ItemCatalog.allItems.Select(idx => ItemCatalog.GetItemDef(idx)).Where(item => item.tier == ItemTier.Boss).Select(item => item.itemIndex).ToList();
-                }
-                AddToItemsToMatch(targetInventory, otherPlayerInventories, _bossItems, ItemTier.Boss);
+            {
+                AddToItemsToMatch(targetInventory, otherPlayerInventories, Run.instance.availableBossDropList.Select(item => PickupCatalog.GetPickupDef(item).itemIndex), ItemTier.Boss);
             }
         }
 
-        private static void AddToItemsToMatch(Inventory targetInventory, Inventory[] otherPlayerInventories, List<ItemIndex> itemTierList, ItemTier itemTier)
+        private static void AddToItemsToMatch(Inventory targetInventory, Inventory[] otherPlayerInventories, IEnumerable<ItemIndex> itemsInTier, ItemTier itemTier)
         {
-            var filteredList = itemTierList.Except(_allInvalidDropItems).ToArray();
-            var difference = (int)otherPlayerInventories.Average(inv => GetItemCountWithExclusions(inv, itemTier)) - GetItemCountWithExclusions(targetInventory, itemTier);
+            var difference = (int)otherPlayerInventories.Average(inv => GetItemCountWithExclusions(inv, itemsInTier, itemTier)) - GetItemCountWithExclusions(targetInventory, itemsInTier, itemTier);
             for (int i = 0; i < difference; i++)
             {
-                targetInventory.GiveItem(GetRandomItem(filteredList), 1);
+                targetInventory.GiveItem(itemsInTier.ElementAt(_rand.Next(itemsInTier.Count())), 1);
             }
         }
 
-        private static int GetItemCountWithExclusions(Inventory inventory, ItemTier itemTier)
+        private static int GetItemCountWithExclusions(Inventory inventory, IEnumerable<ItemIndex> itemsInTier, ItemTier itemTier)
         {
-            return inventory.GetTotalItemCountOfTierWithExclusions(itemTier, _allInvalidCountItems);
-        }
+            var validCountItems = itemsInTier.ToList();
+            switch (itemTier)
+            {
+                case ItemTier.Tier1:
+                    validCountItems.Add(RoR2Content.Items.ScrapWhite.itemIndex);
+                    break;
+                case ItemTier.Tier2:
+                    validCountItems.Add(RoR2Content.Items.ScrapGreen.itemIndex);
+                    break;
+                case ItemTier.Tier3:
+                    validCountItems.Add(RoR2Content.Items.ScrapRed.itemIndex);
+                    break;
+                case ItemTier.Boss:
+                    validCountItems.Add(RoR2Content.Items.ScrapYellow.itemIndex);
+                    break;
+            }
 
-        private static ItemIndex GetRandomItem(IList<ItemIndex> items)
-        {
-            return items[UnityEngine.Random.Range(0, items.Count())];
-        }
-    }
-
-    internal static class InventoryExtensions
-    {
-        internal static int GetTotalItemCountOfTierWithExclusions(this Inventory inventory, ItemTier tier, IEnumerable<ItemIndex> exclusions)
-        {
-            var exclusionsOfTier = exclusions
-                .Select(e => ItemCatalog.GetItemDef(e))
-                .Where(i => i.tier == tier)
-                .Select(i => i.itemIndex);
-
-            var itemsInTier = inventory.GetTotalItemCountOfTier(tier);
-
-            var excludedOfTierInInv = exclusionsOfTier.Sum(inventory.GetItemCount);
-
-            return itemsInTier - excludedOfTierInInv;
+            return validCountItems.Sum(inventory.GetItemCount);
         }
     }
 }

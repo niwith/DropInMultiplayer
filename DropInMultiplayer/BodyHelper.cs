@@ -12,6 +12,7 @@ namespace DropInMultiplayer
 {
     public static class BodyHelper
     {
+        private static System.Random _rand = new System.Random();
         public static IEnumerable<SurvivorDef> _survivorBodies;
 
         public static IEnumerable<SurvivorDef> SurvivorBodies { 
@@ -20,7 +21,7 @@ namespace DropInMultiplayer
                 if (_survivorBodies == null)
                 {
                     _survivorBodies = SurvivorCatalog.allSurvivorDefs
-                        .Where(def => !def.hidden)
+                        .Where(def => !def.hidden || (DropInMultiplayer.Instance.DropInConfig.AllowJoinAsHeretic && "Heretic".Equals(def.cachedName, StringComparison.InvariantCultureIgnoreCase)))
                         .ToArray();
                 }
                 return _survivorBodies;
@@ -56,6 +57,11 @@ namespace DropInMultiplayer
 
         public static GameObject FindBodyPrefab(string characterName)
         {
+            if (characterName.Equals("random", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return SurvivorBodies.ElementAt(_rand.Next(SurvivorBodies.Count())).bodyPrefab;
+            }
+
             return LookupSurvior(characterName)?.bodyPrefab;
         }
     }

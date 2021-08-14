@@ -20,18 +20,17 @@ Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for origin
 ### Commands Examples
 These commands should be sent into the game chat (not the console)
   1. join_as Commando = Spawns you in as commando.
-  2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list
- 
-
-# Installation (Mod Manager)
- 1. Click the install with Mod Manager button
- 2. Done
-  
-# Installation (Manual)
- 1. Extract "DropInMultiplayer.dll" from the zip file and place it into  "/Risk of Rain 2/BepInEx/plugins/" folder.
- 2. Done
+  2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list. This seems to be bugged at the moment, hopefully I can find a fix in next release for it
 
 # Changelog
+
+### 1.0.18
+* Added option to spawn as random character - join_as Random
+
+### 1.0.17
+* Fixed bug which sometimes occured when installing DropInMultiplayer with other mods, notably Starstorm2
+* Removed requriement for developers to manually pass invalid items along to DropInMultiplayer, items are now taken directly from the availible drop items in a run
+* Added config option to enable join as heretic (off by default)
 
 ### 1.0.16
 * Added dependancy back for R2API
@@ -52,7 +51,7 @@ These commands should be sent into the game chat (not the console)
 
 ### 1.0.10
 * Made the code a little more friendly for other mods to interface with
-* Devs looking to block certain items from dropping should check out the DropInMultiplayer.AddInvalidItems(...) method (and/or send me a message)
+* Devs looking to block certain items from dropping should check out the DropInMultiplayer.AddInvalidItems(...) method (and/or send me a message) 
 * Devs looking to temporily block the join_as command should check out the DropInMultiplayer.BlockJoinAs(...) method (and/or send me a message)
 
 ### 1.0.9

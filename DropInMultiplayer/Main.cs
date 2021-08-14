@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using R2API.Utils;
 using RoR2;
 using System;
@@ -18,9 +19,11 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.16";
+        const string version = "1.0.18";
 
-        private DropInMultiplayerConfig _config;
+        public DropInMultiplayerConfig DropInConfig { get; private set; }
+        public static DropInMultiplayer Instance { get; private set; }
+
 
         private readonly Vector3 _spawnOffset = new Vector3(0, 1, 0);
 
@@ -39,7 +42,7 @@ namespace DropInMultiplayer
         public Guid BlockJoinAs(string reason)
         {
             var id = Guid.NewGuid();
-            // Logger.LogInfo($"DropInMultiplayer :: Adding JoinAs Blocker with token {id} and blocker reason {reason}");
+            Logger.LogInfo($"Adding JoinAs Blocker with token {id} and blocker reason {reason}");
             _blockingReasons.Add(id, reason);
             return id;
         }
@@ -51,7 +54,7 @@ namespace DropInMultiplayer
         /// <param name="token"></param>
         public void UnBlockJoinAs(Guid token)
         {
-            // Logger.LogInfo($"DropInMultiplayer :: Removing JoinAs Blocker with token {token} and blocker reason {_blockingReasons[token]}");
+            Logger.LogInfo($"Removing JoinAs Blocker with token {token} and blocker reason {_blockingReasons[token]}");
             _blockingReasons.Remove(token);
         }
 
@@ -64,6 +67,8 @@ namespace DropInMultiplayer
         }
 
         /// <summary>
+        /// No longer required, items to be dropped are now pulled dynamically from run instance.
+        /// 
         /// Adds the given items to the list of items which should not be dropped to a player when joining
         /// </summary>
         /// <param name="items">Items to add to the invalid list</param>
@@ -71,6 +76,7 @@ namespace DropInMultiplayer
         /// when counting the number of items a player has (e.g. by default the captain's defense matrix doesn't count 
         /// towards if a newly joining captain gets a new red item nor does it count towards the average number of
         /// red items for another newly joining player)</param>
+        [Obsolete("No longer required, items to be dropped are now pulled dynamically from run instance")]
         public static void AddInvalidItems(IEnumerable<ItemIndex> items, bool alsoInvalidForCount = false)
         {
             ItemsHelper.AddInvalidItems(items, alsoInvalidForCount);
@@ -78,7 +84,8 @@ namespace DropInMultiplayer
 
         public void Awake()
         {
-            _config = new DropInMultiplayerConfig(Config);
+            Instance = this;
+            DropInConfig = new DropInMultiplayerConfig(base.Config);
             SetupHooks();
             Logger.LogMessage("Drop-In Multiplayer Loaded!");
         }
@@ -90,17 +97,17 @@ namespace DropInMultiplayer
             On.RoR2.Run.SetupUserCharacterMaster += GiveItems;
             On.RoR2.Run.OnServerSceneChanged += CheckStageForBlockJoinAs;
 
-//#if DEBUG
-//            Logger.LogWarning("You're on a debug build. If you see this after downloading from the thunderstore, panic!");
-//            //This is so we can connect to ourselves.
-//            //Instructions:
-//            //Step One: Assuming this line is in your codebase, start two instances of RoR2 (do this through the .exe directly)
-//            //Step Two: Host a game with one instance of RoR2.
-//            //Step Three: On the instance that isn't hosting, open up the console (ctrl + alt + tilde) and enter the command "connect localhost:7777"
-//            //DO NOT MAKE A MISTAKE SPELLING THE COMMAND OR YOU WILL HAVE TO RESTART THE CLIENT INSTANCE!!
-//            //Step Four: Test whatever you were going to test.
-//            On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
-//#endif
+#if DEBUG
+            Logger.LogWarning("You're on a debug build. If you see this after downloading from the thunderstore, panic!");
+            //This is so we can connect to ourselves.
+            //Instructions:
+            //Step One: Assuming this line is in your codebase, start two instances of RoR2 (do this through the .exe directly)
+            //Step Two: Host a game with one instance of RoR2.
+            //Step Three: On the instance that isn't hosting, open up the console (ctrl + alt + tilde) and enter the command "connect localhost:7777"
+            //DO NOT MAKE A MISTAKE SPELLING THE COMMAND OR YOU WILL HAVE TO RESTART THE CLIENT INSTANCE!!
+            //Step Four: Test whatever you were going to test.
+            On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
+#endif
         }
 
         private Guid _blockingJoinForFinalStageToken = Guid.Empty;
@@ -145,9 +152,9 @@ namespace DropInMultiplayer
         {
             orig(self);
             if (NetworkServer.active && Stage.instance != null && //Make sure we're host.
-                _config.WelcomeMessage) //If the host man has enabled this config option.
+                DropInConfig.WelcomeMessage) //If the host man has enabled this config option.
             {
-                AddChatMessage("Hello " + self.userName + $"! Join the game by typing 'join [character name]' or 'join_as [character name]' in chat (without the apostrophes of course) into the chat. Available survivors are: { string.Join(", ", BodyHelper.GetSurvivorDisplayNames())}", 1f);
+                AddChatMessage("Hello " + self.userName + $"! Join the game by typing 'join_as [character name]' in chat. Available survivors are: { string.Join(", ", BodyHelper.GetSurvivorDisplayNames())} (or use Random)", 1f);
             }
         }
 
@@ -156,74 +163,98 @@ namespace DropInMultiplayer
         {
             orig(run, user);
 
-            if (!_config.StartWithItems ||
+            if (!DropInConfig.StartWithItems ||
                 !run.isServer || // If we are not the server don't try to give items, let the server handle it
                 run.fixedTime < 5f) // Don't try to give items to players who spawn with the server
             {
                 return;
             }
 
-            if (_config.GiveExactItems)
+            if (DropInConfig.GiveExactItems)
             {
                 ItemsHelper.CopyItemsFromRandom(user);
             }
             else
             {
-                ItemsHelper.GiveAveragedItems(user, _config.GiveRedItems, _config.GiveLunarItems, _config.GiveBossItems);
+                ItemsHelper.GiveAveragedItems(user, DropInConfig.GiveRedItems, DropInConfig.GiveLunarItems, DropInConfig.GiveBossItems);
             }
         }
-
+        
         private void ChangeOrSetCharacter(NetworkUser player, GameObject bodyPrefab, bool firstTimeJoining)
         {
             var master = player.master;
             var oldBody = master.GetBody();
 
             master.bodyPrefab = bodyPrefab;
-
             CharacterBody body;
             if (firstTimeJoining)
             {
                 var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
                 body = master.SpawnBody(spawnTransform.position + _spawnOffset, spawnTransform.rotation);
+                if (bodyPrefab.name == "HereticBody")
+                {
+                    master.inventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement, 1);
+                    master.inventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement, 1);
+                    master.inventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement, 1);
+                    master.inventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement, 1);
+                }
                 Run.instance.HandlePlayerFirstEntryAnimation(body, spawnTransform.position + _spawnOffset, spawnTransform.rotation);
             }
             else
             {
-                
                 if (BodyCatalog.GetBodyName(oldBody.bodyIndex) == "CaptainBody")
                 {
-                    master.inventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix.itemIndex, 1);
+                    master.inventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix, 1);
                 }
 
                 if (bodyPrefab.name == "CaptainBody")
                 {
-                    master.inventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix.itemIndex, 1);
+                    master.inventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix, 1);
                 }
-                body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
+
+                if (BodyCatalog.GetBodyName(oldBody.bodyIndex) == "HereticBody")
+                {
+                    master.inventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement, 1);
+                    master.inventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement, 1);
+                    master.inventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement, 1);
+                    master.inventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement, 1);
+                }
+                
+                if (bodyPrefab.name != "HereticBody")
+                {
+                    body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
+                }
+                else
+                {
+                    if (bodyPrefab.name == "HereticBody")
+                    {
+                        master.inventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement, 1);
+                        master.inventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement, 1);
+                        master.inventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement, 1);
+                        master.inventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement, 1);
+                    }
+
+                    body = master.GetBody();
+                }
             }
 
             AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
         }
 
-        private bool IsDead(NetworkUser player)
-        {
-            return !player.master.hasBody;
-        }
-
         private void JoinAs(NetworkUser user, string characterName, string username)
         {
 
-            if (!_config.JoinAsEnabled)
+            if (!DropInConfig.JoinAsEnabled)
             {
-                Logger.LogWarning("DropInMultiplayer :: Join_As disabled. Returning...");
+                Logger.LogWarning("Join_As disabled. Returning...");
                 return;
             }
 
-            if (_config.HostOnlySpawnAs)
+            if (DropInConfig.HostOnlySpawnAs)
             {
                 if (NetworkUser.readOnlyInstancesList[0].netId != user.netId)
                 {
-                    Logger.LogWarning("DropInMultiplayer :: HostOnlySpawnAs is enabled and the person using join_as isn't host. Returning!");
+                    Logger.LogWarning("HostOnlySpawnAs is enabled and the person using join_as isn't host. Returning!");
                     return;
                 }
             }
@@ -257,13 +288,15 @@ namespace DropInMultiplayer
             // The character the player is trying to spawn as doesn't exist. 
             if (!bodyPrefab)
             {
-                AddChatMessage($"Sorry {player.userName} couldn't find {characterName}. Availible survivors are: {string.Join(", ", BodyHelper.GetSurvivorDisplayNames())}");
-                Logger.LogWarning("DropInMultiplayer :: Sent message to player informing them that what they requested to join as does not exist. Also bodyPrefab does not exist, returning!");
+                AddChatMessage($"{characterName} not found. Availible survivors are: {string.Join(", ", BodyHelper.GetSurvivorDisplayNames())} (or use Random)");
+                Logger.LogWarning("Sent message to player informing them that what they requested to join as does not exist. Also bodyPrefab does not exist, returning!");
                 return;
             }
-
+            
             if (player.master == null) // If the player is joining for the first time
             {
+                Logger.LogInfo($"Spawning {player.userName} as newly joined player");
+
                 // Make sure the person can actually join. This allows SetupUserCharacterMaster (which is called in OnUserAdded) to work.
                 Run.instance.SetFieldValue("allowNewParticipants", true);
 
@@ -277,16 +310,21 @@ namespace DropInMultiplayer
             }
             else // The player has already joined
             {
-                if (!_config.AllowReJoinAs)
+                Logger.LogInfo($"{player.userName} has already joined, checking other join conditions");
+
+                if (!DropInConfig.AllowReJoinAs)
                 {
+                    Logger.LogInfo($"{player.userName} could not use join_as after selecting ");
                     AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as after selecting character.");
                 }
-                else if (IsDead(player))
+                else if (player.master.lostBodyToDeath)
                 {
+                    Logger.LogInfo($"{player.userName} is dead and can't change character");
                     AddChatMessage($"Sorry {player.userName}! You can't use join_as while dead.");
                 }
                 else
                 {
+                    Logger.LogInfo($"Changing existing character for {player.userName}");
                     ChangeOrSetCharacter(player, bodyPrefab, false);
                 }
             }
@@ -308,7 +346,7 @@ namespace DropInMultiplayer
                     {
                         return NetworkUser.readOnlyInstancesList[result];
                     }
-                    Logger.LogError("DropInMultiplayer :: Specified player index does not exist");
+                    Logger.LogError("Specified player index does not exist");
                     return null;
                 }
                 else

@@ -9,7 +9,9 @@ namespace DropInMultiplayer
         private readonly ConfigEntry<bool> _joinAsEnabled;
         private readonly ConfigEntry<bool> _hostOnlySpawnAs;
         private readonly ConfigEntry<bool> _allowReJoinAs;
-        
+
+        private readonly ConfigEntry<bool> _allowJoinAsHeretic;
+
         private readonly ConfigEntry<bool> _startWithItems;
         private readonly ConfigEntry<bool> _giveExactItems;
         private readonly ConfigEntry<bool> _giveRedItems;
@@ -21,7 +23,9 @@ namespace DropInMultiplayer
         public bool JoinAsEnabled { get => _joinAsEnabled.Value; }
         public bool HostOnlySpawnAs { get => _hostOnlySpawnAs.Value; }
         public bool AllowReJoinAs { get => _allowReJoinAs.Value; }
-        
+
+        public bool AllowJoinAsHeretic { get => _allowJoinAsHeretic.Value; }
+
         public bool StartWithItems { get => _startWithItems.Value; }
         public bool GiveExactItems { get => _giveExactItems.Value; }
         public bool GiveRedItems { get => _giveRedItems.Value; }
@@ -35,6 +39,8 @@ namespace DropInMultiplayer
             _joinAsEnabled = config.Bind("Enable/Disable", "Join_As", true, "Enables or disables the join_as command.");
             _hostOnlySpawnAs = config.Bind("Enable/Disable", "HostOnlyJoin_As", false, "Changes the join_as command to be host only");
             _allowReJoinAs = config.Bind("Enable/Disable", "AllowReJoin_As", false, "When enabled, allows players to use the join_as command after they have already selected a character");
+
+            _allowJoinAsHeretic = config.Bind("Enable/Disable", "AllowJoinAsHeretic", false, "When enabled, allows players to join as the heretic, and will be given the items for the heretic");
 
             _startWithItems = config.Bind("Enable/Disable", "StartWithItems", true, "Enables or disables giving players items if they join mid-game.");
             _giveExactItems = config.Bind("Enable/Disable", "GiveExactItems", false, "Chooses a random member in the game and gives the new player their items, should be used with ShareSuite.");
