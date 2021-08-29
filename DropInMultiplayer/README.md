@@ -1,33 +1,46 @@
-# DropinMultiplayer
+# DropInMultiplayer
 The drop in multiplayer mod for Risk of Rain 2!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
-If you have any bug reports, ping me on the modding discord (https://discord.gg/5MbXZvd), you can make an issue on the github if you want, but I'll level with you, I'll probably forget to check it.
+If you have any bug reports, ping me on the modding discord (https://discord.gg/5MbXZvd), or create an issue on the github repo.
+Things I am working on for the mod will be listed on the project board: https://github.com/niwith/DropInMultiplayer/projects/1
 
 Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
-
+## Instructions
 ### How to Join Existing Game
-  1. Go to steam friends list
-  2. Click the little arrow next to your friend's name
-  3. Click the "Join Friend" button
-  4. You will now be loaded into spectator mode in Risk of Rain 2
-  5. Press enter to open chat and type your join as command, e.g.
-	* join_as Commando
-	* join_as Huntress
-	* join_as Captain
+1. Go to steam friends list
+2. Click the little arrow next to your friend's name
+3. Click the "Join Friend" button
+4. You will now be loaded into spectator mode in Risk of Rain 2
+5. Press enter to open chat and type your join as command, e.g.
+    * join_as Commando
+    * join_as Huntress
+    * join_as Captain
 
-### Commands Examples
+### Chat Commands Examples
 These commands should be sent into the game chat (not the console)
-  1. join_as Commando = Spawns you in as commando.
-  2. join_as Huntress niwith = Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list. This seems to be bugged at the moment, hopefully I can find a fix in next release for it
+1. **join_as Commando** - Spawns you in as commando.
+2. **join_as Huntress niwith** - Spawns niwith in as Huntress, replace niwith with whoever you'd like to spawn as huntress/whatever in the names list. 
+
+### Item Blacklisting
+* Add the internal names to your drop blacklist and/or count blacklist in your config file. If adding multiple items to your blacklist, separate the items with commas, e.g. ```AttackSpeedOnCrit, BarrierOnKill, ArmorPlate```
+   * You can also use the display names of items in blacklists, just remove any commas from the item name. Also the display names may be different depending on the hosts language options (I have only tested English so far).  
+* To get the internal names of items either generate use the default your own lists of items using the ```dim_logdropitemstofile "C:\Your\FolderPath\Here"``` console command, or use the pre-generated lists which can be found here: https://github.com/niwith/DropInMultiplayer/tree/master/DropInMultiplayer/RiskOfRain2Items
+   * If you want to blacklist modded items you will need to generate your own files
+* The **DropItemsBlacklist** config entry controls which items will not be dropped to players when joining, while the **CountItemsBlackList**
+
+## Known Issues
+* Currently incompatible with Refightilization (https://thunderstore.io/package/Wonda/Refightilization/), I'll work on this in the next patch
+* Config file looks weird, I didn't set it up correctly originally but fixing it would break existing config files. Waiting on https://github.com/BepInEx/BepInEx/pull/267 to write some automatic upgrade code so no one has to manually redo their config files
+* Currently **DropItemsBlackList** only works when **GiveExactItems** is false
 
 # Changelog
-
-
 ### 1.0.19
+* Fixed bug preventing setting another player's character when they first joined
+* Fixed bug preventing changing another player's character when they had spaces in their username
+* Added blacklist for drop items and count items in config file
 * Fixed discord invite link in readme
-*
 
 ### 1.0.18
 * Added option to spawn as random character - join_as Random

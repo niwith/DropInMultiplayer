@@ -20,7 +20,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.18";
+        const string version = "1.0.19";
 
         public DropInMultiplayerConfig DropInConfig { get; private set; }
         public static DropInMultiplayer Instance { get; private set; }
@@ -92,7 +92,7 @@ namespace DropInMultiplayer
         }
 
         [ConCommand(commandName = "dim_logdropitemstofile", flags = ConVarFlags.None, helpText = "Writes currently availible drop items which can be blacklisted to the given folder path (defaults to your documents in folder named \"RiskOfRain2Items\"")]
-        private static void MyCommandName(ConCommandArgs args)
+        private static void LogDropItemsToFileCommand(ConCommandArgs args)
         {
             if (args.Count == 0)
             {
@@ -216,7 +216,7 @@ namespace DropInMultiplayer
         {
             var master = player.master;
             var oldBody = master.GetBody();
-
+            
             master.bodyPrefab = bodyPrefab;
             CharacterBody body;
             if (firstTimeJoining)
@@ -333,7 +333,7 @@ namespace DropInMultiplayer
                 Run.instance.SetFieldValue("allowNewParticipants", true);
 
                 //Now that we've made sure the person can join, let's give them a CharacterMaster.
-                Run.instance.OnUserAdded(user);
+                Run.instance.OnUserAdded(player);
 
                 ChangeOrSetCharacter(player, bodyPrefab, true);
 
