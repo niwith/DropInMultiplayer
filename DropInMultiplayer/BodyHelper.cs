@@ -12,7 +12,7 @@ namespace DropInMultiplayer
 {
     public static class BodyHelper
     {
-        private static System.Random _rand = new System.Random();
+        private static readonly System.Random _rand = new System.Random();
         public static IEnumerable<SurvivorDef> _survivorBodies;
 
         public static IEnumerable<SurvivorDef> SurvivorBodies { 

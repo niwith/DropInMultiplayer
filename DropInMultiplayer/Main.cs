@@ -15,6 +15,7 @@ namespace DropInMultiplayer
     [BepInPlugin(guid, modName, version)]
     [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
+    [R2APISubmoduleDependency(nameof(CommandHelper))]
     public class DropInMultiplayer : BaseUnityPlugin
     {
         const string guid = "com.niwith.DropInMultiplayer";
@@ -87,7 +88,27 @@ namespace DropInMultiplayer
             Instance = this;
             DropInConfig = new DropInMultiplayerConfig(base.Config);
             SetupHooks();
-            Logger.LogMessage("Drop-In Multiplayer Loaded!");
+            CommandHelper.AddToConsoleWhenReady();
+        }
+
+        [ConCommand(commandName = "dim_logdropitemstofile", flags = ConVarFlags.None, helpText = "Writes currently availible drop items which can be blacklisted to the given folder path (defaults to your documents in folder named \"RiskOfRain2Items\"")]
+        private static void MyCommandName(ConCommandArgs args)
+        {
+            if (args.Count == 0)
+            {
+                var directory = FileHelper.LogDropItemsToFile();
+                Debug.Log("Wrote files to directory: " + directory);
+            }
+            else if (args.Count == 1)
+            {
+                var folderPath = args[0];
+                var directory = FileHelper.LogDropItemsToFile(folderPath);
+                Debug.Log("Wrote files to directory: " + directory);
+            }
+            else
+            {
+                Debug.Log("dim_logdropitemstofile requires 0 or 1 argument");
+            }
         }
 
         private void SetupHooks()
@@ -114,14 +135,18 @@ namespace DropInMultiplayer
         private void CheckStageForBlockJoinAs(On.RoR2.Run.orig_OnServerSceneChanged orig, Run self, string sceneName)
         {
             orig(self, sceneName);
-            if ((sceneName.Equals("moon") || sceneName.Equals("moon2")) && _blockingJoinForFinalStageToken.Equals(Guid.Empty))
+
+            if (!DropInConfig.AllowMoonDropIn)
             {
-                _blockingJoinForFinalStageToken = BlockJoinAs("Cannot join on final stage, may softlock run");
-            }
-            else if (!_blockingJoinForFinalStageToken.Equals(Guid.Empty))
-            {
-                UnBlockJoinAs(_blockingJoinForFinalStageToken);
-                _blockingJoinForFinalStageToken = Guid.Empty;
+                if ((sceneName.Equals("moon") || sceneName.Equals("moon2")) && _blockingJoinForFinalStageToken.Equals(Guid.Empty))
+                {
+                    _blockingJoinForFinalStageToken = BlockJoinAs("Cannot join on final stage, may softlock run");
+                }
+                else if (!_blockingJoinForFinalStageToken.Equals(Guid.Empty))
+                {
+                    UnBlockJoinAs(_blockingJoinForFinalStageToken);
+                    _blockingJoinForFinalStageToken = Guid.Empty;
+                }
             }
         }
 
@@ -131,7 +156,7 @@ namespace DropInMultiplayer
 
             if (concommandName.Equals("say", StringComparison.InvariantCultureIgnoreCase))
             {
-                var userInput = userArgs.FirstOrDefault().Split(' ');
+                var userInput = userArgs.FirstOrDefault().Split(new char[] { ' ' }, count: 3);
                 var chatCommand = userInput.FirstOrDefault();
                 if (chatCommand.IsNullOrWhiteSpace())
                 {
@@ -140,8 +165,8 @@ namespace DropInMultiplayer
 
                 if (chatCommand.Equals("join_as", StringComparison.InvariantCultureIgnoreCase) || chatCommand.Equals("join", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    string bodyString = userInput.ElementAtOrDefault(1) ?? "";
-                    string userString = userInput.ElementAtOrDefault(2) ?? "";
+                    var bodyString = userInput.ElementAtOrDefault(1) ?? "";
+                    var userString = userInput.ElementAtOrDefault(2) ?? "";
 
                     JoinAs(sender.networkUser, bodyString, userString);
                 }
@@ -154,7 +179,14 @@ namespace DropInMultiplayer
             if (NetworkServer.active && Stage.instance != null && //Make sure we're host.
                 DropInConfig.WelcomeMessage) //If the host man has enabled this config option.
             {
-                AddChatMessage("Hello " + self.userName + $"! Join the game by typing 'join_as [character name]' in chat. Available survivors are: { string.Join(", ", BodyHelper.GetSurvivorDisplayNames())} (or use Random)", 1f);
+                var message = DropInConfig.CustomWelcomeMessage;
+                if (message.Length > 1000)
+                {
+                    return;
+                }
+                message = message.ReplaceOnce("{username}", self.userName);
+                message = message.ReplaceOnce("{survivorlist}", string.Join(", ", BodyHelper.GetSurvivorDisplayNames()));
+                AddChatMessage(message, 1f);
             }
         }
 

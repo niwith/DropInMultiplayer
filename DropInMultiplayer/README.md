@@ -24,6 +24,11 @@ These commands should be sent into the game chat (not the console)
 
 # Changelog
 
+
+### 1.0.19
+* Fixed discord invite link in readme
+*
+
 ### 1.0.18
 * Added option to spawn as random character - join_as Random
 
