@@ -1,0 +1,19 @@
+Display Name,Internal Name
+Gesture of the Drowned,AutoCastEquipment
+Focused Convergence,FocusConvergence
+Brittle Crown,GoldOnHit
+Purity,LunarBadLuck
+Shaped Glass,LunarDagger
+Visions of Heresy,LunarPrimaryReplacement
+Hooks of Heresy,LunarSecondaryReplacement
+Essence of Heresy,LunarSpecialReplacement
+Beads of Fealty,LunarTrinket
+Strides of Heresy,LunarUtilityReplacement
+Defiant Gouge,MonstersOnShrineUse
+Mercurial Rachis,RandomDamageZone
+Corpsebloom,RepeatHeal
+Transcendence,ShieldOnly
+Helfire Tincture,EquipmentIndex.BurnNearby
+Effigy of Grief,EquipmentIndex.CrippleWard
+Glowing Meteorite,EquipmentIndex.Meteor
+Spinel Tonic,EquipmentIndex.Tonic
