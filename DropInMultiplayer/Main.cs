@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using R2API.Utils;
 using RoR2;
+using RoR2.Networking;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace DropInMultiplayer
     {
         const string guid = "com.niwith.DropInMultiplayer";
         const string modName = "Drop In Multiplayer";
-        const string version = "1.0.19";
+        const string version = "1.0.22";
 
         public DropInMultiplayerConfig DropInConfig { get; private set; }
         public static DropInMultiplayer Instance { get; private set; }
@@ -42,7 +43,7 @@ namespace DropInMultiplayer
         /// <returns></returns>
         public Guid BlockJoinAs(string reason)
         {
-            var id = Guid.NewGuid();
+            Guid id = Guid.NewGuid();
             Logger.LogInfo($"Adding JoinAs Blocker with token {id} and blocker reason {reason}");
             _blockingReasons.Add(id, reason);
             return id;
@@ -86,7 +87,7 @@ namespace DropInMultiplayer
         public void Awake()
         {
             Instance = this;
-            DropInConfig = new DropInMultiplayerConfig(base.Config);
+            DropInConfig = new DropInMultiplayerConfig(Config);
             SetupHooks();
             CommandHelper.AddToConsoleWhenReady();
         }
@@ -96,13 +97,13 @@ namespace DropInMultiplayer
         {
             if (args.Count == 0)
             {
-                var directory = FileHelper.LogDropItemsToFile();
+                string directory = FileHelper.LogDropItemsToFile();
                 Debug.Log("Wrote files to directory: " + directory);
             }
             else if (args.Count == 1)
             {
-                var folderPath = args[0];
-                var directory = FileHelper.LogDropItemsToFile(folderPath);
+                string folderPath = args[0];
+                string directory = FileHelper.LogDropItemsToFile(folderPath);
                 Debug.Log("Wrote files to directory: " + directory);
             }
             else
@@ -114,7 +115,7 @@ namespace DropInMultiplayer
         private void SetupHooks()
         {
             On.RoR2.Console.RunCmd += CheckChatForJoinRequest;
-            On.RoR2.NetworkUser.Start += GreetNewPlayer;
+            On.RoR2.NetworkUser.Start += NetworkUser_Start;
             On.RoR2.Run.SetupUserCharacterMaster += GiveItems;
             On.RoR2.Run.OnServerSceneChanged += CheckStageForBlockJoinAs;
 
@@ -127,8 +128,17 @@ namespace DropInMultiplayer
             //Step Three: On the instance that isn't hosting, open up the console (ctrl + alt + tilde) and enter the command "connect localhost:7777"
             //DO NOT MAKE A MISTAKE SPELLING THE COMMAND OR YOU WILL HAVE TO RESTART THE CLIENT INSTANCE!!
             //Step Four: Test whatever you were going to test.
-            On.RoR2.Networking.GameNetworkManager.OnClientConnect += (self, user, t) => { };
+            On.RoR2.Networking.NetworkManagerSystem.OnClientConnect += (self, user, t) => { };
 #endif
+        }
+
+        private void NetworkUser_Start(On.RoR2.NetworkUser.orig_Start orig, NetworkUser networkUser)
+        {
+            orig(networkUser);
+            if (ThisIsServer() && IsCurrentlyInGame())
+            {
+                ChatHelper.GreetNewPlayer(networkUser);
+            }
         }
 
         private Guid _blockingJoinForFinalStageToken = Guid.Empty;
@@ -156,37 +166,20 @@ namespace DropInMultiplayer
 
             if (concommandName.Equals("say", StringComparison.InvariantCultureIgnoreCase))
             {
-                var userInput = userArgs.FirstOrDefault().Split(new char[] { ' ' }, count: 3);
-                var chatCommand = userInput.FirstOrDefault();
-                if (chatCommand.IsNullOrWhiteSpace())
+                string[] userInput = userArgs.FirstOrDefault().Split(new char[] { ' ' }, count: 3);
+                string chatCommand = userInput.FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(chatCommand))
                 {
                     return;
                 }
 
                 if (chatCommand.Equals("join_as", StringComparison.InvariantCultureIgnoreCase) || chatCommand.Equals("join", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var bodyString = userInput.ElementAtOrDefault(1) ?? "";
-                    var userString = userInput.ElementAtOrDefault(2) ?? "";
+                    string bodyString = userInput.ElementAtOrDefault(1) ?? "";
+                    string userString = userInput.ElementAtOrDefault(2) ?? "";
 
                     JoinAs(sender.networkUser, bodyString, userString);
                 }
-            }
-        }
-
-        private void GreetNewPlayer(On.RoR2.NetworkUser.orig_Start orig, NetworkUser self)
-        {
-            orig(self);
-            if (NetworkServer.active && Stage.instance != null && //Make sure we're host.
-                DropInConfig.WelcomeMessage) //If the host man has enabled this config option.
-            {
-                var message = DropInConfig.CustomWelcomeMessage;
-                if (message.Length > 1000)
-                {
-                    return;
-                }
-                message = message.ReplaceOnce("{username}", self.userName);
-                message = message.ReplaceOnce("{survivorlist}", string.Join(", ", BodyHelper.GetSurvivorDisplayNames()));
-                AddChatMessage(message, 1f);
             }
         }
 
@@ -196,7 +189,6 @@ namespace DropInMultiplayer
             orig(run, user);
 
             if (!DropInConfig.StartWithItems ||
-                !run.isServer || // If we are not the server don't try to give items, let the server handle it
                 run.fixedTime < 5f) // Don't try to give items to players who spawn with the server
             {
                 return;
@@ -211,17 +203,17 @@ namespace DropInMultiplayer
                 ItemsHelper.GiveAveragedItems(user, DropInConfig.GiveRedItems, DropInConfig.GiveLunarItems, DropInConfig.GiveBossItems);
             }
         }
-        
+
         private void ChangeOrSetCharacter(NetworkUser player, GameObject bodyPrefab, bool firstTimeJoining)
         {
-            var master = player.master;
-            var oldBody = master.GetBody();
-            
+            CharacterMaster master = player.master;
+            CharacterBody oldBody = master.GetBody();
+
             master.bodyPrefab = bodyPrefab;
             CharacterBody body;
             if (firstTimeJoining)
             {
-                var spawnTransform = Stage.instance.GetPlayerSpawnTransform();
+                Transform spawnTransform = Stage.instance.GetPlayerSpawnTransform();
                 body = master.SpawnBody(spawnTransform.position + _spawnOffset, spawnTransform.rotation);
                 if (bodyPrefab.name == "HereticBody")
                 {
@@ -251,7 +243,7 @@ namespace DropInMultiplayer
                     master.inventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement, 1);
                     master.inventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement, 1);
                 }
-                
+
                 if (bodyPrefab.name != "HereticBody")
                 {
                     body = master.Respawn(master.GetBody().transform.position, master.GetBody().transform.rotation);
@@ -270,7 +262,7 @@ namespace DropInMultiplayer
                 }
             }
 
-            AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
+            ChatHelper.AddChatMessage($"{player.userName} is spawning as {body.GetDisplayName()}!");
         }
 
         private void JoinAs(NetworkUser user, string characterName, string username)
@@ -300,7 +292,7 @@ namespace DropInMultiplayer
             //Finding the NetworkUser from the person who is using the command.
             NetworkUser player;
             // No user name provided, default to self
-            if (username.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(username))
             {
                 player = user;
             }
@@ -309,7 +301,7 @@ namespace DropInMultiplayer
                 player = GetNetUserFromString(username);
                 if (player == null)
                 {
-                    AddChatMessage($"Could not find player with identifier: {username}");
+                    ChatHelper.AddChatMessage($"Could not find player with identifier: {username}");
                     return;
                 }
             }
@@ -320,11 +312,11 @@ namespace DropInMultiplayer
             // The character the player is trying to spawn as doesn't exist. 
             if (!bodyPrefab)
             {
-                AddChatMessage($"{characterName} not found. Availible survivors are: {string.Join(", ", BodyHelper.GetSurvivorDisplayNames())} (or use Random)");
+                ChatHelper.AddChatMessage($"{characterName} not found. Availible survivors are: {string.Join(", ", BodyHelper.GetSurvivorDisplayNames())} (or use Random)");
                 Logger.LogWarning("Sent message to player informing them that what they requested to join as does not exist. Also bodyPrefab does not exist, returning!");
                 return;
             }
-            
+
             if (player.master == null) // If the player is joining for the first time
             {
                 Logger.LogInfo($"Spawning {player.userName} as newly joined player");
@@ -347,12 +339,12 @@ namespace DropInMultiplayer
                 if (!DropInConfig.AllowReJoinAs)
                 {
                     Logger.LogInfo($"{player.userName} could not use join_as after selecting ");
-                    AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as after selecting character.");
+                    ChatHelper.AddChatMessage($"Sorry {player.userName}! The host has made it so you can't use join_as after selecting character.");
                 }
                 else if (player.master.lostBodyToDeath)
                 {
                     Logger.LogInfo($"{player.userName} is dead and can't change character");
-                    AddChatMessage($"Sorry {player.userName}! You can't use join_as while dead.");
+                    ChatHelper.AddChatMessage($"Sorry {player.userName}! You can't use join_as while dead.");
                 }
                 else
                 {
@@ -364,30 +356,30 @@ namespace DropInMultiplayer
 
         private void SendJoinAsBlockedMessage()
         {
-            var reasons = string.Join(", ", _blockingReasons.Select(r => r.Value));
-            AddChatMessage($"Sorry, join as is temporarily disabled for the following reason(s): {reasons}");
+            string reasons = string.Join(", ", _blockingReasons.Select(r => r.Value));
+            ChatHelper.AddChatMessage($"Sorry, join as is temporarily disabled for the following reason(s): {reasons}");
         }
 
         private NetworkUser GetNetUserFromString(string playerString)
         {
-            if (playerString != "")
+            if (!string.IsNullOrWhiteSpace(playerString))
             {
-                if (int.TryParse(playerString, out var result))
+                if (int.TryParse(playerString, out int playerIndex))
                 {
-                    if (result < NetworkUser.readOnlyInstancesList.Count && result >= 0)
+                    if (playerIndex < NetworkUser.readOnlyInstancesList.Count && playerIndex >= 0)
                     {
-                        return NetworkUser.readOnlyInstancesList[result];
+                        return NetworkUser.readOnlyInstancesList[playerIndex];
                     }
                     Logger.LogError("Specified player index does not exist");
                     return null;
                 }
                 else
                 {
-                    foreach (NetworkUser n in NetworkUser.readOnlyInstancesList)
+                    foreach (NetworkUser networkUser in NetworkUser.readOnlyInstancesList)
                     {
-                        if (n.userName.Equals(playerString, StringComparison.InvariantCultureIgnoreCase))
+                        if (networkUser.userName.Equals(playerString, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            return n;
+                            return networkUser;
                         }
                     }
                     return null;
@@ -396,16 +388,14 @@ namespace DropInMultiplayer
             return null;
         }
 
-        private void AddChatMessage(string message, float time = 0.1f)
+        private static bool ThisIsServer()
         {
-            StartCoroutine(AddHelperMessage(message, time));
+            return NetworkServer.active;
         }
 
-        private IEnumerator AddHelperMessage(string message, float time)
+        private bool IsCurrentlyInGame()
         {
-            yield return new WaitForSeconds(time);
-            var chatMessage = new Chat.SimpleChatMessage { baseToken = message };
-            Chat.SendBroadcastChat(chatMessage);
+            return Run.instance != null;
         }
     }
 }

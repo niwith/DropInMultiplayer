@@ -26,7 +26,6 @@ namespace DropInMultiplayer
 
         private readonly ConfigEntry<bool> _welcomeMessage;
         private readonly ConfigEntry<string> _customWelcomeMessage;
-        private readonly ConfigFile _config;
 
         public bool JoinAsEnabled { get => _joinAsEnabled.Value; }
         public bool HostOnlySpawnAs { get => _hostOnlySpawnAs.Value; }
@@ -63,7 +62,7 @@ namespace DropInMultiplayer
             {
                 if (_countItemsBlackListParsed == null)
                 {
-                    _countItemsBlackListParsed = _dropItemsBlackList.Value.Split(',')
+                    _countItemsBlackListParsed = _countItemsBlackList.Value.Split(',')
                         .Where(entry => entry.Length != 0)
                         .Select(entry => entry.Trim())
                         .ToArray();
@@ -76,9 +75,7 @@ namespace DropInMultiplayer
         public string CustomWelcomeMessage { get => _customWelcomeMessage.Value; }
 
         public DropInMultiplayerConfig(ConfigFile config)
-        {
-            _config = config;
-            
+        {            
             // General
             _joinAsEnabled = config.Bind("Enable/Disable", "Join_As", true, "Enables or disables the join_as command.");
             _hostOnlySpawnAs = config.Bind("Enable/Disable", "HostOnlyJoin_As", false, "Changes the join_as command to be host only");
@@ -104,12 +101,12 @@ namespace DropInMultiplayer
             _customWelcomeMessage = config.Bind("Welcome Message", "CustomWelcomeMessage", DefaultWelcomeMessage, 
                 "Format of welcome message. {username} will be replaced with joining users name, and {survivorlist} will be replaced by list of availible survivors.");
 
-            MigrateLegacySettings(config);
+            // MigrateLegacySettings(config);
         }
 
-        private void MigrateLegacySettings(ConfigFile config)
-        {
-            // TODO: requires features from this bepinex pull request, until then config will be wierd https://github.com/BepInEx/BepInEx/pull/267
-        }
+        //private void MigrateLegacySettings(ConfigFile config)
+        //{
+        //    // TODO: requires features from this bepinex pull request, until then config will be wierd https://github.com/BepInEx/BepInEx/pull/267
+        //}
     }
 }

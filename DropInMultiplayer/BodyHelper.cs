@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -12,10 +13,13 @@ namespace DropInMultiplayer
 {
     public static class BodyHelper
     {
+        private const string _survivorNameCharFilter = @"[^a-zA-Z0-9 ]";
+
         private static readonly System.Random _rand = new System.Random();
         public static IEnumerable<SurvivorDef> _survivorBodies;
 
-        public static IEnumerable<SurvivorDef> SurvivorBodies { 
+        public static IEnumerable<SurvivorDef> SurvivorBodies
+        {
             get
             {
                 if (_survivorBodies == null)
@@ -39,8 +43,12 @@ namespace DropInMultiplayer
         {
             foreach (var survivor in SurvivorBodies)
             {
-                var nameEqual = survivor.cachedName != null && CompareNameStringsNoSpaces(survivor.cachedName, name);
-                var displayNameEqual = survivor.displayNameToken != null && CompareNameStringsNoSpaces(Language.GetString(survivor.displayNameToken), name);
+                bool nameEqual = survivor.cachedName != null && CompareNameStringsNoSpaces(survivor.cachedName, name);
+
+                string displayName = Language.GetString(survivor.displayNameToken);
+                string displayNameFiltered = Regex.Replace(displayName, _survivorNameCharFilter, "");
+                bool  displayNameEqual = survivor.displayNameToken != null && CompareNameStringsNoSpaces(displayNameFiltered, name);
+
                 if (nameEqual || displayNameEqual)
                 {
                     return survivor;
@@ -52,7 +60,11 @@ namespace DropInMultiplayer
 
         public static IEnumerable<string> GetSurvivorDisplayNames()
         {
-            return SurvivorBodies.Select(def => Language.GetString(def.displayNameToken).Replace(" ", string.Empty));
+            return SurvivorBodies.Select(def =>
+            {
+                string displayName = Language.GetString(def.displayNameToken);
+                return Regex.Replace(displayName, _survivorNameCharFilter, "");
+            });
         }
 
         public static GameObject FindBodyPrefab(string characterName)

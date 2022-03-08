@@ -16,14 +16,14 @@ namespace DropInMultiplayer
 
             Directory.CreateDirectory(baseFolderPath);
 
-            foreach (var itemTier in ItemsHelper.ItemTiers)
+            foreach (ItemTier itemTier in ItemsHelper.ItemTiers)
             {
-                var items = ItemsHelper.GetDropListForTier(itemTier, true);
-                var builder = new StringBuilder();
+                IEnumerable<PickupIndex> items = ItemsHelper.GetDropListForTier(itemTier, true);
+                StringBuilder builder = new StringBuilder();
                 builder.AppendLine("Display Name,Internal Name");
-                foreach (var item in items)
+                foreach (PickupIndex item in items)
                 {
-                    var pickupDef = PickupCatalog.GetPickupDef(item);
+                    PickupDef pickupDef = PickupCatalog.GetPickupDef(item);
                     // Removing ItemIndex. because its automatically added, and removing commas because we need commas for comma seperated values
                     builder.AppendLine($"{Language.GetString(pickupDef.nameToken).Replace(",","")},{pickupDef.internalName.Replace("ItemIndex.", "")}");
                 }

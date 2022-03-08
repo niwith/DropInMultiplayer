@@ -31,53 +31,37 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\Libs\0Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Libs\Assembly-CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\..\Libs\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\Libs\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Preloader">
-      <HintPath>..\..\Libs\BepInEx.Preloader.dll</HintPath>
+    <Reference Include="com.unity.multiplayer-hlapi.Runtime">
+      <HintPath>..\..\Libs\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="HGCSharpUtils">
       <HintPath>..\..\Libs\HGCSharpUtils.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>..\..\Libs\MMHOOK_Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\Libs\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>..\..\Libs\MonoMod.Utils.dll</HintPath>
+    <Reference Include="MMHOOK_RoR2">
+      <HintPath>..\..\Libs\MMHOOK_RoR2.dll</HintPath>
     </Reference>
     <Reference Include="R2API">
       <HintPath>..\..\Libs\R2API.dll</HintPath>
     </Reference>
+    <Reference Include="RoR2">
+      <HintPath>..\..\Libs\RoR2.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\Libs\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\Libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>..\..\Libs\UnityEngine.Networking.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BodyHelper.cs" />
+    <Compile Include="ChatHelper.cs" />
     <Compile Include="DropInMultiplayerConfig.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="HelperExtensions.cs" />

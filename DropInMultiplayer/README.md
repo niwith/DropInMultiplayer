@@ -2,8 +2,8 @@
 The drop in multiplayer mod for Risk of Rain 2!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
-If you have any bug reports, ping me on the modding discord (https://discord.gg/5MbXZvd), or create an issue on the github repo.
-Things I am working on for the mod will be listed on the project board: https://github.com/niwith/DropInMultiplayer/projects/1
+If you have any bug reports, ping me on the modding discord (@niwith on https://discord.gg/5MbXZvd), or feel free to private message me .
+Things I am working on for the mod may be listed on the project board: https://github.com/niwith/DropInMultiplayer/projects/1
 
 Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
@@ -28,14 +28,26 @@ These commands should be sent into the game chat (not the console)
    * You can also use the display names of items in blacklists, just remove any commas from the item name. Also the display names may be different depending on the hosts language options (I have only tested English so far).  
 * To get the internal names of items either generate use the default your own lists of items using the ```dim_logdropitemstofile "C:\Your\FolderPath\Here"``` console command, or use the pre-generated lists which can be found here: https://github.com/niwith/DropInMultiplayer/tree/master/DropInMultiplayer/RiskOfRain2Items
    * If you want to blacklist modded items you will need to generate your own files
-* The **DropItemsBlacklist** config entry controls which items will not be dropped to players when joining, while the **CountItemsBlackList**
+* The **DropItemsBlacklist** config entry controls which items will not be dropped to players when joining, while the **CountItemsBlackList** controls which items will not be counted for the average item count of other players to be given to the joining player
 
 ## Known Issues
-* Currently incompatible with Refightilization (https://thunderstore.io/package/Wonda/Refightilization/), I'll work on this in the next patch
+* Currently incompatible with Refightilization (https://thunderstore.io/package/Wonda/Refightilization/), I'll work on this at some point
 * Config file looks weird, I didn't set it up correctly originally but fixing it would break existing config files. Waiting on https://github.com/BepInEx/BepInEx/pull/267 to write some automatic upgrade code so no one has to manually redo their config files
 * Currently **DropItemsBlackList** only works when **GiveExactItems** is false
 
 # Changelog
+### 1.0.22
+* Fixed a bug preventing players from joining
+
+### 1.0.21
+* Updated to point to the correct DLLs, hopefully this should fix some of the issues people were having
+* Added code to ignore void items for the moment, I'll come back and fix properly at some point but at the moment it would have been causing exceptions
+* There are likely still lots of issues in this patch as well, hopefully less issues than the previous
+
+### 1.0.20
+* Updated to work with Survivors of the Void DLC
+* This is a quick patch to update to latest, it may have unkown issues I haven't done a huge amount of testing yet
+
 ### 1.0.19
 * Fixed bug preventing setting another player's character when they first joined
 * Fixed bug preventing changing another player's character when they had spaces in their username
