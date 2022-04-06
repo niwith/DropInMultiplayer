@@ -1,13 +1,9 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using R2API.Utils;
 using RoR2;
-using RoR2.Networking;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Networking;
 

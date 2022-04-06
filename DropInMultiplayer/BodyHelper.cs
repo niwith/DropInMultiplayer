@@ -41,7 +41,7 @@ namespace DropInMultiplayer
 
         public static SurvivorDef LookupSurvior(string name)
         {
-            foreach (var survivor in SurvivorBodies)
+            foreach (SurvivorDef survivor in SurvivorBodies)
             {
                 bool nameEqual = survivor.cachedName != null && CompareNameStringsNoSpaces(survivor.cachedName, name);
 
