@@ -1,6 +1,6 @@
 {
   "name": "DropinMultiplayer",
-  "version_number": "2.0.0",
+  "version_number": "2.0.1",
   "website_url": "https://github.com/niwith/DropInMultiplayer",
   "description": "Drop in and out of multiplayer with your friends. Automatically adds items to help you catch up.",
   "dependencies": [

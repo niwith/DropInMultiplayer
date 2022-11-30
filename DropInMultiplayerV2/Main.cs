@@ -3,12 +3,10 @@ using BepInEx.Logging;
 using DropInMultiplayer.Helpers;
 using R2API.Utils;
 using RoR2;
-using RoR2.Networking;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -42,7 +40,7 @@ namespace DropInMultiplayer
     {
         private const string guid = "com.niwith.DropInMultiplayer";
         private const string modName = "Drop In Multiplayer";
-        private const string version = "2.0.0";
+        private const string version = "2.0.1";
 
         private const string HelpHelpText = "Usage: help {command}\nDescription: Prints help text for command";
         private const string JoinAsHelpText = "Usage: join_as {survivor} {player (optional)}\nDescription: Join in-progress run as the given survivor";

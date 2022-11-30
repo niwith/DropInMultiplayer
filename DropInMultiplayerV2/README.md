@@ -40,6 +40,9 @@ Note that in config options "enabled" is true and "disabled" is false.
 Also if updating from an old version of the mod, your old config may hang around, which may have different configraution, and some old no longer used config options. My suggestion is delete your old config file to avoid confusion.
 
 # Changelog
+### 2.0.1
+* Fixed debug mode enabled, which interfered with some networking and could have been causing reported issues
+
 ### 2.0.0
 * Rewrote the mod almost from scratch
 * Fixed bug preventing rejoining player (who had not died in the current stage) from automatically spawning in
