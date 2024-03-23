@@ -3,12 +3,12 @@ The drop in multiplayer mod for Risk of Rain 2!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
 If you have any bug reports, ping me on the modding discord (@niwith on https://discord.gg/5MbXZvd), or feel free to private message me.
-Things I am working on for the mod may be listed on the project board: https://github.com/niwith/DropInMultiplayer/projects/1
+**If you are reporting a bug, please include a copy of your logs, type "!log" in the modding dicsord server for instructions on how to grab your logs.**
 
 Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for originally creating this mod.
 
 ## Instructions
-### How to Join Existing Game
+### How to Join Existing Game (Steam)
 1. Go to steam friends list
 2. Click the little arrow next to your friend's name
 3. Click the "Join Friend" button
@@ -17,6 +17,10 @@ Credit to https://thunderstore.io/package/SushiDev/DropinMultiplayer/ for origin
     * /join_as Commando
     * /join_as Huntress
     * /join_as Captain
+
+### How to Join Existing Game (Epic)
+If anyone has used this mod on epic and can confirm the steps to join an ongoing game through epic, please let me know. 
+I have not been able to test this myself.
 
 ### More Chat Commands Examples
 These commands should be sent into the game chat, can also be used in console with dim_ added to the start of the command name, e.g. dim_join_as
@@ -39,7 +43,14 @@ If you get stuck, try the help command:
 Note that in config options "enabled" is true and "disabled" is false.
 Also if updating from an old version of the mod, your old config may hang around, which may have different configraution, and some old no longer used config options. My suggestion is delete your old config file to avoid confusion.
 
+### Known Issues
+* Ongoing game will cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
+
 # Changelog
+### 3.0.0
+* Been a while since an update, this one updates the referenced DLLs
+* If doing this hasn't fixed your issue, please report the issue and include your logs files
+
 ### 2.0.1
 * Fixed debug mode enabled, which interfered with some networking and could have been causing reported issues
 

@@ -32,30 +32,32 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx">
-      <HintPath>..\..\Libs\BepInEx.dll</HintPath>
+      <HintPath>..\Libraries\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="com.unity.multiplayer-hlapi.Runtime">
-      <HintPath>..\..\Libs\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
+      <HintPath>..\Libraries\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="HGCSharpUtils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="HGCSharpUtils">
+      <HintPath>..\Libraries\HGCSharpUtils.dll</HintPath>
+    </Reference>
     <Reference Include="MMHOOK_RoR2">
-      <HintPath>..\..\Libs\MMHOOK_RoR2.dll</HintPath>
+      <HintPath>..\Libraries\MMHOOK_RoR2.dll</HintPath>
     </Reference>
-    <Reference Include="R2API">
-      <HintPath>..\..\Libs\R2API.dll</HintPath>
+    <Reference Include="R2API.Core">
+      <HintPath>..\Libraries\R2API.Core.dll</HintPath>
     </Reference>
     <Reference Include="RoR2">
-      <HintPath>..\..\Libs\RoR2.dll</HintPath>
+      <HintPath>..\Libraries\RoR2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\Libs\UnityEngine.dll</HintPath>
+      <HintPath>..\Libraries\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Libs\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\Libraries\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -67,15 +69,14 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="CreateRelease.bat" />
     <None Include="manifest.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="manifestv2.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="CreatePackage.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -84,4 +85,7 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>powershell .\CreatePackage.ps1</PostBuildEvent>
+  </PropertyGroup>
 </Project>

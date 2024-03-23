@@ -10,6 +10,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
+[assembly: HG.Reflection.SearchableAttribute.OptIn]
 namespace DropInMultiplayer
 {
     internal enum JoinAsResult
@@ -32,15 +33,14 @@ namespace DropInMultiplayer
         }
     }
 
-    [BepInPlugin(guid, modName, version)]
-    [BepInDependency("com.bepis.r2api", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+    [BepInDependency(R2API.R2API.PluginGUID, BepInDependency.DependencyFlags.HardDependency)]
     [NetworkCompatibility(CompatibilityLevel.NoNeedForSync, VersionStrictness.DifferentModVersionsAreOk)]
-    [R2APISubmoduleDependency(nameof(CommandHelper))]
     public class DropInMultiplayer : BaseUnityPlugin
     {
-        private const string guid = "com.niwith.DropInMultiplayer";
-        private const string modName = "Drop In Multiplayer";
-        private const string version = "2.0.1";
+        public const string PluginGUID = "com.niwith.DropInMultiplayer";
+        public const string PluginName = "Drop In Multiplayer";
+        public const string PluginVersion = "3.0.0";
 
         private const string HelpHelpText = "Usage: help {command}\nDescription: Prints help text for command";
         private const string JoinAsHelpText = "Usage: join_as {survivor} {player (optional)}\nDescription: Join in-progress run as the given survivor";
@@ -70,8 +70,6 @@ namespace DropInMultiplayer
 
         public void Awake()
         {
-            CommandHelper.AddToConsoleWhenReady();
-
             Instance = this;
             Logger = base.Logger;
             DropInConfig = new DropInMultiplayerConfig(Config);
@@ -220,18 +218,18 @@ namespace DropInMultiplayer
             Run.instance.SetFieldValue("allowNewParticipants", true);
             Run.instance.OnUserAdded(player);
             Run.instance.SetFieldValue("allowNewParticipants", false);
-            
+
 
             Transform spawnTransform = GetSpawnTransformForPlayer(player);
             player.master.SpawnBody(spawnTransform.position, spawnTransform.rotation);
-            
+
             HandleBodyItems(player, null, BodyCatalog.GetBodyPrefab(newBodyIndex));
-            
+
             if (DropInConfig.GiveCatchUpItems.Value)
             {
                 GiveCatchUpItems(player);
             }
-            
+
             return JoinAsResult.Success;
         }
 
@@ -254,7 +252,7 @@ namespace DropInMultiplayer
             }
 
             HandleBodyItems(player, oldBodyPrefab, BodyCatalog.GetBodyPrefab(newBodyIndex));
-            
+
             return result;
         }
 
@@ -350,7 +348,7 @@ namespace DropInMultiplayer
                 displayName = Language.GetString(survivor.displayNameToken);
             }
             else if (DropInConfig.AllowJoinAsAllBodies.Value)
-            { 
+            {
                 BodyIndex bodyIndex = BodyCatalog.FindBodyIndexCaseInsensitive(survivorOrBodyName.EndsWith("Body", StringComparison.InvariantCultureIgnoreCase) ? survivorOrBodyName : survivorOrBodyName + "Body");
                 if (bodyIndex == BodyIndex.None)
                 {
@@ -636,7 +634,7 @@ namespace DropInMultiplayer
             validCountItems.AddRange(Run.instance.availableVoidBossDropList);
 
             validCountItems.AddRange(Run.instance.availableLunarItemDropList);
-            
+
             Inventory[] activePlayerInventories = NetworkUser.readOnlyInstancesList.Where(netUser => netUser != player && netUser?.master?.inventory != null).Select(netUser => netUser.master.inventory).ToArray();
             ItemIndex[] countItemIndexes = validCountItems.Select(pickupIndex => PickupCatalog.GetPickupDef(pickupIndex).itemIndex).ToArray();
 
