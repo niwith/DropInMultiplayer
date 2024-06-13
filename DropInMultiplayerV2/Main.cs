@@ -69,7 +69,7 @@ namespace DropInMultiplayer
         }.ToDictionary(rec => rec.Name);
 
         //Move/rename this to wherever you see fit.
-        private static List<Inventory> captainBlacklistInventories;
+        private static HashSet<Inventory> captainBlacklistInventories;
 
         public void Awake()
         {
@@ -102,7 +102,8 @@ namespace DropInMultiplayer
 
         private static void Run_onRunStartGlobal()
         {
-            captainBlacklistInventories = new List<Inventory>();
+            //Reset this on new run
+            captainBlacklistInventories = new HashSet<Inventory>();
         }
 
         private static void Run_SetupUserCharacterMaster(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run self, NetworkUser user)
@@ -280,7 +281,7 @@ namespace DropInMultiplayer
                 {
                     case "CaptainBody":
                         bool hasMicrobots = playerInventory.GetItemCount(RoR2Content.Items.CaptainDefenseMatrix) > 0;
-                        if (!hasMicrobots && DropInConfig.PreventCaptainScrapAbuse.Value && !captainBlacklistInventories.Contains(playerInventory))
+                        if (!hasMicrobots && DropInConfig.PreventCaptainScrapAbuse.Value)
                         {
                             captainBlacklistInventories.Add(playerInventory);
                         }
