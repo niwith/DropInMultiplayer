@@ -68,6 +68,9 @@ namespace DropInMultiplayer
 #endif
         }.ToDictionary(rec => rec.Name);
 
+        //Move/rename this to wherever you see fit.
+        private static List<Inventory> captainBlacklistInventories;
+
         public void Awake()
         {
             Instance = this;
@@ -79,6 +82,7 @@ namespace DropInMultiplayer
 
         private static void SetupEventHandlers()
         {
+            RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
             On.RoR2.Console.RunCmd += Console_RunCmd;
             On.RoR2.Run.SetupUserCharacterMaster += Run_SetupUserCharacterMaster;
             NetworkUser.onPostNetworkUserStart += NetworkUser_onPostNetworkUserStart;
@@ -94,6 +98,11 @@ namespace DropInMultiplayer
             //Step Four: Test whatever you were going to test.
             On.RoR2.Networking.NetworkManagerSystem.ClientSendAuth += (orig, self, conn) => { };
 #endif
+        }
+
+        private static void Run_onRunStartGlobal()
+        {
+            captainBlacklistInventories = new List<Inventory>();
         }
 
         private static void Run_SetupUserCharacterMaster(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run self, NetworkUser user)
@@ -269,12 +278,20 @@ namespace DropInMultiplayer
 
                 if (oldBodyName == "CaptainBody")
                 {
+                    bool hasMicrobots = playerInventory.GetItemCount(RoR2Content.Items.CaptainDefenseMatrix) > 0;
+                    if (!hasMicrobots && DropInConfig.PreventCaptainScrapAbuse.Value)
+                    {
+                        captainBlacklistInventories.Add(playerInventory);
+                    }
                     playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
                 }
 
                 if (newBodyName == "CaptainBody")
                 {
-                    playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                    if (!DropInConfig.PreventCaptainScrapAbuse.Value || !captainBlacklistInventories.Contains(playerInventory))
+                    {
+                        playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                    }
                 }
 
                 if (DropInConfig.GiveHereticItems.Value)
