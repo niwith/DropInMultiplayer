@@ -272,25 +272,28 @@ namespace DropInMultiplayer
                     playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
                 }
 
-                if (oldBodyName == "HereticBody")
-                {
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement);
-                }
-
                 if (newBodyName == "CaptainBody")
                 {
                     playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
                 }
 
-                if (newBodyName == "HereticBody")
+                if (DropInConfig.GiveHereticItems.Value)
                 {
-                    playerInventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement);
+                    if (oldBodyName == "HereticBody")
+                    {
+                        playerInventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement);
+                        playerInventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement);
+                        playerInventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement);
+                        playerInventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement);
+                    }
+
+                    if (newBodyName == "HereticBody")
+                    {
+                        playerInventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement);
+                        playerInventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement);
+                        playerInventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement);
+                        playerInventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement);
+                    }
                 }
             }
             catch (Exception ex)
