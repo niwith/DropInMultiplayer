@@ -16,6 +16,8 @@ namespace DropInMultiplayer
         // Survivors
         public ConfigEntry<bool> AllowJoinAsHiddenSurvivors { get; }
         public ConfigEntry<bool> AllowJoinAsAllBodies { get; }
+        public ConfigEntry<bool> GiveHereticItems { get; }  //Todo: Categorize as you see fit
+        public ConfigEntry<bool> PreventCaptainScrapAbuse { get; }
 
         // Items
         public ConfigEntry<bool> GiveCatchUpItems { get; }
@@ -36,6 +38,8 @@ namespace DropInMultiplayer
             // Survivors
             AllowJoinAsHiddenSurvivors = config.Bind("Survivors", "AllowJoinAsHiddenSurvivors", true, "When enabled allows players to join as hidden characters, e.g. heretic");
             AllowJoinAsAllBodies = config.Bind("General", "AllowJoinAsAllBodies", false, "When enabled using the join as command will attempt to match with any body, e.g. join_as beetle, WARNING: Very Untested!");
+            GiveHereticItems = config.Bind("Survivors", "GiveHereticItems", true, "When enabled joining as Heretic will give all 4 Heretic items automatically.");
+            PreventCaptainScrapAbuse = config.Bind("Survivors", "PreventCaptainScrapAbuse", true, "When enabled Captain will not receive replacement Microbots if it was scrapped or removed.");
 
             // Items
             GiveCatchUpItems = config.Bind("Items", "GiveCatchUpItems", true, "When enabled players will be given catch up items when joining");
