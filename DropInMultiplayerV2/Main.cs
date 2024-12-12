@@ -285,7 +285,10 @@ namespace DropInMultiplayer
                         {
                             captainBlacklistInventories.Add(playerInventory);
                         }
-                        playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+
+                        //This case is for mod setups where Microbots can be obtained via drops.
+                        //If a player is already blacklisted from auto-receiving Microbots, there's no need to remove it.
+                        if (!captainBlacklistInventories.Contains(playerInventory)) playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
                         break;
                     case "HereticBody":
                         if (DropInConfig.GiveHereticItems.Value)
