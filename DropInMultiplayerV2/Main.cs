@@ -68,6 +68,9 @@ namespace DropInMultiplayer
 #endif
         }.ToDictionary(rec => rec.Name);
 
+        //Move/rename this to wherever you see fit.
+        private static HashSet<Inventory> captainBlacklistInventories;
+
         public void Awake()
         {
             Instance = this;
@@ -79,6 +82,7 @@ namespace DropInMultiplayer
 
         private static void SetupEventHandlers()
         {
+            RoR2.Run.onRunStartGlobal += Run_onRunStartGlobal;
             On.RoR2.Console.RunCmd += Console_RunCmd;
             On.RoR2.Run.SetupUserCharacterMaster += Run_SetupUserCharacterMaster;
             NetworkUser.onPostNetworkUserStart += NetworkUser_onPostNetworkUserStart;
@@ -94,6 +98,12 @@ namespace DropInMultiplayer
             //Step Four: Test whatever you were going to test.
             On.RoR2.Networking.NetworkManagerSystem.ClientSendAuth += (orig, self, conn) => { };
 #endif
+        }
+
+        private static void Run_onRunStartGlobal()
+        {
+            //Reset this on new run
+            captainBlacklistInventories = new HashSet<Inventory>();
         }
 
         private static void Run_SetupUserCharacterMaster(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run self, NetworkUser user)
@@ -267,30 +277,51 @@ namespace DropInMultiplayer
                 oldBodyName = oldBodyPrefab?.name; // Null when first joining and don't have a body prefab to switch from
                 newBodyName = newBodyPrefab.name;
 
-                if (oldBodyName == "CaptainBody")
+                switch(oldBodyName)
                 {
-                    playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                    case "CaptainBody":
+                        bool hasMicrobots = playerInventory.GetItemCount(RoR2Content.Items.CaptainDefenseMatrix) > 0;
+                        if (!hasMicrobots && DropInConfig.PreventCaptainScrapAbuse.Value)
+                        {
+                            captainBlacklistInventories.Add(playerInventory);
+                        }
+
+                        //This case is for mod setups where Microbots can be obtained via drops.
+                        //If a player is already blacklisted from auto-receiving Microbots, there's no need to remove it.
+                        if (!captainBlacklistInventories.Contains(playerInventory)) playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                        break;
+                    case "HereticBody":
+                        if (DropInConfig.GiveHereticItems.Value)
+                        {
+                            playerInventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement);
+                            playerInventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement);
+                            playerInventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement);
+                            playerInventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement);
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
-                if (oldBodyName == "HereticBody")
+                switch(newBodyName)
                 {
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement);
-                    playerInventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement);
-                }
-
-                if (newBodyName == "CaptainBody")
-                {
-                    playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
-                }
-
-                if (newBodyName == "HereticBody")
-                {
-                    playerInventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement);
-                    playerInventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement);
+                    case "CaptainBody":
+                        if (!captainBlacklistInventories.Contains(playerInventory) || !DropInConfig.PreventCaptainScrapAbuse.Value)
+                        {
+                            playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                        }
+                        break;
+                    case "HereticBody":
+                        if (DropInConfig.GiveHereticItems.Value)
+                        {
+                            playerInventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement);
+                            playerInventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement);
+                            playerInventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement);
+                            playerInventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             catch (Exception ex)
