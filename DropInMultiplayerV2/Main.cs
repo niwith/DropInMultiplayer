@@ -100,7 +100,7 @@ namespace DropInMultiplayer
 #endif
         }
 
-        private static void Run_onRunStartGlobal()
+        private static void Run_onRunStartGlobal(Run run)
         {
             //Reset this on new run
             captainBlacklistInventories = new HashSet<Inventory>();
@@ -288,7 +288,10 @@ namespace DropInMultiplayer
 
                         //This case is for mod setups where Microbots can be obtained via drops.
                         //If a player is already blacklisted from auto-receiving Microbots, there's no need to remove it.
-                        if (!captainBlacklistInventories.Contains(playerInventory)) playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                        if (!captainBlacklistInventories.Contains(playerInventory))
+                        {
+                            playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                        }
                         break;
                     case "HereticBody":
                         if (DropInConfig.GiveHereticItems.Value)
