@@ -5,6 +5,7 @@
 
 **/ReleaseOutput/*
 **/DebugOutput/*
+/Libraries/*.dll
 
 # User-specific files
 *.rsuser

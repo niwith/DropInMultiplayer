@@ -1,0 +1,12 @@
+Put following libraries here:
+
+BepInEx.dll
+com.unity.multiplayer-hlapi.Runtime.dll
+HGCSharpUtils.dll
+MMHOOK_Assembly-CSharp.dll
+MMHOOK_RoR2.dll
+PutLibraryDLLsHere.md
+R2API.Core.dll
+RoR2.dll
+UnityEngine.CoreModule.dll
+UnityEngine.dll

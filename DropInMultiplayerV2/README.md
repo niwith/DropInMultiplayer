@@ -1,5 +1,5 @@
 # DropInMultiplayer
-The drop in multiplayer mod for Risk of Rain 2!
+The drop in multiplayer mod for Risk of Rain 2, now updated (hopefully) to work with Seekers of the Storm!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
 If you have any bug reports, ping me on the modding discord (@niwith on https://discord.gg/5MbXZvd), or feel free to private message me.
@@ -44,9 +44,15 @@ Note that in config options "enabled" is true and "disabled" is false.
 Also if updating from an old version of the mod, your old config may hang around, which may have different configraution, and some old no longer used config options. My suggestion is delete your old config file to avoid confusion.
 
 ### Known Issues
+* **DO NOT JOIN AS A DLC CHARACTER IF YOU DO NOT HAVE THE DLC** doing so may cause the game to freeze or crash
 * Ongoing game will cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
 
 # Changelog
+### 4.0.0
+* Updated referenced DLLs so that the build is compatible with the updates made in the main game update of Seekers of the Storm
+* Have not tested with the DLC itself, any of the new characters or items. I assume these will work without issue, but please let me know if that's not the case
+* This fix worked with my local testing, however as always please report the issue and **include your logs files**
+
 ### 3.0.0
 * Been a while since an update, this one updates the referenced DLLs
 * If doing this hasn't fixed your issue, please report the issue and include your logs files
