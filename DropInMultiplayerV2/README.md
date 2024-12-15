@@ -48,6 +48,12 @@ Also if updating from an old version of the mod, your old config may hang around
 * Ongoing game will cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
 
 # Changelog
+### 4.1.0
+* Merged pull request "Config option for Heretic Items, Config option to prevent Captain Scrap Abuse" (https://github.com/niwith/DropInMultiplayer/pull/21)
+    * Fixes to prevent edge case where infinite red scrap  could be obtained by getting new Microbots when spawning as Captain (with config to revet this behaviour, default is to prevent scrap abuse)
+    * Adds config to toggle if using join as heritic should give the 4 requried items (default is to give the 4 items)
+* Fix for issue "Missing return statement; causes NullReferenceException" (https://github.com/niwith/DropInMultiplayer/issues/18) 
+
 ### 4.0.0
 * Updated referenced DLLs so that the build is compatible with the updates made in the main game update of Seekers of the Storm
 * Have not tested with the DLC itself, any of the new characters or items. I assume these will work without issue, but please let me know if that's not the case

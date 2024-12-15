@@ -40,7 +40,7 @@ namespace DropInMultiplayer
     {
         public const string PluginGUID = "com.niwith.DropInMultiplayer";
         public const string PluginName = "Drop In Multiplayer";
-        public const string PluginVersion = "3.0.0";
+        public const string PluginVersion = "4.1.0";
 
         private const string HelpHelpText = "Usage: help {command}\nDescription: Prints help text for command";
         private const string JoinAsHelpText = "Usage: join_as {survivor} {player (optional)}\nDescription: Join in-progress run as the given survivor";
@@ -168,6 +168,7 @@ namespace DropInMultiplayer
             if (!_chatCommands.TryGetValue(chatCommandName.ToUpperInvariant(), out ChatCommand chatCommand))
             {
                 SendChatMessage("Unable to find command, try /help");
+                return;
             }
 
             string resultMessage = chatCommand.Handler(sender.networkUser, commandArgs);

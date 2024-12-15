@@ -16,7 +16,7 @@ namespace DropInMultiplayer
         // Survivors
         public ConfigEntry<bool> AllowJoinAsHiddenSurvivors { get; }
         public ConfigEntry<bool> AllowJoinAsAllBodies { get; }
-        public ConfigEntry<bool> GiveHereticItems { get; }  //Todo: Categorize as you see fit
+        public ConfigEntry<bool> GiveHereticItems { get; }  
         public ConfigEntry<bool> PreventCaptainScrapAbuse { get; }
 
         // Items
