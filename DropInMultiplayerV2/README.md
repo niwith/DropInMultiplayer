@@ -52,6 +52,7 @@ Also if updating from an old version of the mod, your old config may hang around
 * Merged pull request "Config option for Heretic Items, Config option to prevent Captain Scrap Abuse" (https://github.com/niwith/DropInMultiplayer/pull/21)
     * Fixes to prevent edge case where infinite red scrap  could be obtained by getting new Microbots when spawning as Captain (with config to revet this behaviour, default is to prevent scrap abuse)
     * Adds config to toggle if using join as heritic should give the 4 requried items (default is to give the 4 items)
+    * Big thank you to @Moffein (https://github.com/Moffein) for the PR
 * Fix for issue "Missing return statement; causes NullReferenceException" (https://github.com/niwith/DropInMultiplayer/issues/18) 
 
 ### 4.0.0
