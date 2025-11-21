@@ -281,7 +281,7 @@ namespace DropInMultiplayer
                 switch(oldBodyName)
                 {
                     case "CaptainBody":
-                        bool hasMicrobots = playerInventory.GetItemCount(RoR2Content.Items.CaptainDefenseMatrix) > 0;
+                        bool hasMicrobots = playerInventory.GetItemCountPermanent(RoR2Content.Items.CaptainDefenseMatrix) > 0;
                         if (!hasMicrobots && DropInConfig.PreventCaptainScrapAbuse.Value)
                         {
                             captainBlacklistInventories.Add(playerInventory);
@@ -291,16 +291,16 @@ namespace DropInMultiplayer
                         //If a player is already blacklisted from auto-receiving Microbots, there's no need to remove it.
                         if (!captainBlacklistInventories.Contains(playerInventory))
                         {
-                            playerInventory.RemoveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                            playerInventory.RemoveItemPermanent(RoR2Content.Items.CaptainDefenseMatrix);
                         }
                         break;
                     case "HereticBody":
                         if (DropInConfig.GiveHereticItems.Value)
                         {
-                            playerInventory.RemoveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                            playerInventory.RemoveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                            playerInventory.RemoveItem(RoR2Content.Items.LunarSpecialReplacement);
-                            playerInventory.RemoveItem(RoR2Content.Items.LunarUtilityReplacement);
+                            playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarPrimaryReplacement);
+                            playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarSecondaryReplacement);
+                            playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarSpecialReplacement);
+                            playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarUtilityReplacement);
                         }
                         break;
                     default:
@@ -312,16 +312,16 @@ namespace DropInMultiplayer
                     case "CaptainBody":
                         if (!captainBlacklistInventories.Contains(playerInventory) || !DropInConfig.PreventCaptainScrapAbuse.Value)
                         {
-                            playerInventory.GiveItem(RoR2Content.Items.CaptainDefenseMatrix);
+                            playerInventory.GiveItemPermanent(RoR2Content.Items.CaptainDefenseMatrix);
                         }
                         break;
                     case "HereticBody":
                         if (DropInConfig.GiveHereticItems.Value)
                         {
-                            playerInventory.GiveItem(RoR2Content.Items.LunarPrimaryReplacement);
-                            playerInventory.GiveItem(RoR2Content.Items.LunarSecondaryReplacement);
-                            playerInventory.GiveItem(RoR2Content.Items.LunarSpecialReplacement);
-                            playerInventory.GiveItem(RoR2Content.Items.LunarUtilityReplacement);
+                            playerInventory.GiveItemPermanent(RoR2Content.Items.LunarPrimaryReplacement);
+                            playerInventory.GiveItemPermanent(RoR2Content.Items.LunarSecondaryReplacement);
+                            playerInventory.GiveItemPermanent(RoR2Content.Items.LunarSpecialReplacement);
+                            playerInventory.GiveItemPermanent(RoR2Content.Items.LunarUtilityReplacement);
                         }
                         break;
                     default:
@@ -681,7 +681,7 @@ namespace DropInMultiplayer
 
             int CountInventoryItems(Inventory inventory)
             {
-                return countItemIndexes.Sum(itemIndex => inventory.GetItemCount(itemIndex));
+                return countItemIndexes.Sum(itemIndex => inventory.GetItemCountPermanent(itemIndex));
             }
         }
 
@@ -717,7 +717,7 @@ namespace DropInMultiplayer
                         List<PickupIndex> tierDropList = weightedSelection.Evaluate(UnityEngine.Random.value);
                         PickupIndex itemPickupIndex = tierDropList.ElementAtOrDefault(UnityEngine.Random.Range(0, tierDropList.Count));
                         ItemIndex itemIndex = PickupCatalog.GetPickupDef(itemPickupIndex)?.itemIndex ?? ItemIndex.None;
-                        inventory.GiveItem(itemIndex);
+                        inventory.GiveItemPermanent(itemIndex);
                     }
                     catch (Exception ex)
                     {
