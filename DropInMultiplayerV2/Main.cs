@@ -40,7 +40,7 @@ namespace DropInMultiplayer
     {
         public const string PluginGUID = "com.niwith.DropInMultiplayer";
         public const string PluginName = "Drop In Multiplayer";
-        public const string PluginVersion = "4.1.0";
+        public const string PluginVersion = "4.2.0";
 
         private const string HelpHelpText = "Usage: help {command}\nDescription: Prints help text for command";
         private const string JoinAsHelpText = "Usage: join_as {survivor} {player (optional)}\nDescription: Join in-progress run as the given survivor";
@@ -251,7 +251,10 @@ namespace DropInMultiplayer
 
             JoinAsResult result = JoinAsResult.Success;
 
-            if (player.GetCurrentBody() == null && player.master.lostBodyToDeath && !DropInConfig.AllowRespawn.Value)
+            bool isDead = player.GetCurrentBody() == null && player.master.lostBodyToDeath; // Dead and not remote operating a drone
+            isDead |= player.GetCurrentBody().isRemoteOp; // Dead and is remote operating a drone
+
+            if (isDead && !DropInConfig.AllowRespawn.Value)
             {
                 Logger.LogMessage($"Unable immediately to spawn {player.userName} with bodyIndex = {newBodyIndex} due to being player being dead and AllowRespawn being set to false");
                 result = JoinAsResult.DeadAndNotAllowRespawn;
@@ -302,6 +305,30 @@ namespace DropInMultiplayer
                             playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarSpecialReplacement);
                             playerInventory.RemoveItemPermanent(RoR2Content.Items.LunarUtilityReplacement);
                         }
+                        break;
+                    case "DroneTechBody":
+                        Logger.LogMessage("Removing drones from players swapping off Operator is work in progress");
+                        
+                        // WIP code
+                        //// Figure out why this is null sometimes
+                        //MinionOwnership.MinionGroup playerMinionGroup = MinionOwnership.MinionGroup.FindGroup(player.master.netId);
+                        //if (playerMinionGroup == null)
+                        //{
+                        //    Logger.LogError("Switching off Operator, but no minion group for the player could be found");
+                        //    break;
+                        //}
+
+                        //CharacterBody[] dronesToRemove = playerMinionGroup.members
+                        //    .Select(minionOwnership => minionOwnership.GetComponent<CharacterMaster>()?.GetBody())
+                        //    .Where(droneBody => true) // replace me with a filter for just the Operator default drones
+                        //    .ToArray();
+
+                        //foreach (CharacterBody drone in dronesToRemove)
+                        //{
+                        //    Logger.LogMessage($"Destorying drone {drone.bodyIndex}");
+                        //    drone.healthComponent.Suicide();
+                        //}
+
                         break;
                     default:
                         break;

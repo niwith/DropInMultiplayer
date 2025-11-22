@@ -18,6 +18,7 @@ namespace DropInMultiplayer
         public ConfigEntry<bool> AllowJoinAsAllBodies { get; }
         public ConfigEntry<bool> GiveHereticItems { get; }  
         public ConfigEntry<bool> PreventCaptainScrapAbuse { get; }
+        public ConfigEntry<bool> PreventOperatorDroneAbuse { get; }
 
         // Items
         public ConfigEntry<bool> GiveCatchUpItems { get; }

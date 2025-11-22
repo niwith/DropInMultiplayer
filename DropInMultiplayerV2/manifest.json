@@ -1,11 +1,11 @@
 {
     "name": "DropinMultiplayer",
     "author": "niwith",
-    "version_number": "4.1.0",
+    "version_number": "4.2.0",
     "website_url": "https://github.com/niwith/DropInMultiplayer",
     "description": "Drop in and out of multiplayer with your friends. Automatically adds items to help you catch up.",
     "dependencies": [
-        "RiskofThunder-RoR2BepInExPack-1.25.0",
-        "RiskofThunder-R2API_Core-5.1.3"
+        "bbepis-BepInExPack-5.4.2121",
+        "RiskofThunder-R2API_Core-5.2.0"
     ]
 }

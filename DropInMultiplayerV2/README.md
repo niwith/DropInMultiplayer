@@ -1,5 +1,5 @@
 # DropInMultiplayer
-The drop in multiplayer mod for Risk of Rain 2, now updated (hopefully) to work with Seekers of the Storm!
+The drop in multiplayer mod for Risk of Rain 2, now updated (hopefully) to work with Alloyed Collective!
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
 If you have any bug reports, ping me on the modding discord (@niwith on https://discord.gg/5MbXZvd), or feel free to private message me.
@@ -45,9 +45,15 @@ Also if updating from an old version of the mod, your old config may hang around
 
 ### Known Issues
 * **DO NOT JOIN AS A DLC CHARACTER IF YOU DO NOT HAVE THE DLC** doing so may cause the game to freeze or crash
-* Ongoing game will cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
+* Ongoing game sometimes cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
+* [WIP] Switching from Operator doesn't remove the drones that come as part of the character, working on a fix for this one just needs more work
 
 # Changelog
+### 4.2.0
+* Updated to be compatible with Alloyed Collective
+    * Switched to using new versions of add, remove and count items that only interact with permenant items
+    * Fixed issue that would allow players to respawn using /join if they were remote operating a drone
+
 ### 4.1.0
 * Merged pull request "Config option for Heretic Items, Config option to prevent Captain Scrap Abuse" (https://github.com/niwith/DropInMultiplayer/pull/21)
     * Fixes to prevent edge case where infinite red scrap  could be obtained by getting new Microbots when spawning as Captain (with config to revet this behaviour, default is to prevent scrap abuse)
