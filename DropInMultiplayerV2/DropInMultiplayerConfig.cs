@@ -45,7 +45,7 @@ namespace DropInMultiplayer
             // Items
             GiveCatchUpItems = config.Bind("Items", "GiveCatchUpItems", true, "When enabled players will be given catch up items when joining");
             GiveRejoiningPlayersCatchUpItems = config.Bind("Items", "GiveRejoiningPlayersCatchUpItems", true, "When enabled players who leave and rejoin will be given catchup items, WARNING: Can be exploited by giving all items to one player then leaving and rejoining");
-            GiveCatchUpVoidItems = config.Bind("Items", "GiveCatchUpVoidItems", false, "When enabled lunar items will be dropped when players start (requires GiveCatchUpItems enabled)");
+            GiveCatchUpVoidItems = config.Bind("Items", "GiveCatchUpVoidItems", false, "When enabled void items will be dropped when players start (requires GiveCatchUpItems enabled)");
             GiveCatchUpLunarItems = config.Bind("Items", "GiveCatchUpLunarItems", false, "When enabled lunar items will be dropped when players start (requires GiveCatchUpItems enabled)");
 
             // Chat Messages
