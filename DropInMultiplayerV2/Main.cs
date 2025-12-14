@@ -261,6 +261,7 @@ namespace DropInMultiplayer
             }
             else
             {
+                player.master.originalBodyPrefab = player.master.bodyPrefab;
                 Transform spawnTransform = GetSpawnTransformForPlayer(player);
                 player.master.Respawn(spawnTransform.position, spawnTransform.rotation);
             }
