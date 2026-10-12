@@ -223,7 +223,7 @@ namespace DropInMultiplayer
             }
 
             Transform spawnTransform = GetSpawnTransformForPlayer(player);
-            player.master.SpawnBody(spawnTransform.position, spawnTransform.rotation);
+            player.master.Respawn(spawnTransform.position, spawnTransform.rotation);
 
             HandleBodyItems(player, null, BodyCatalog.GetBodyPrefab(newBodyIndex));
 
