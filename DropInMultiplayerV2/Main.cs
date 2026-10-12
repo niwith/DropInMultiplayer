@@ -40,7 +40,7 @@ namespace DropInMultiplayer
     {
         public const string PluginGUID = "com.niwith.DropInMultiplayer";
         public const string PluginName = "Drop In Multiplayer";
-        public const string PluginVersion = "4.2.1";
+        public const string PluginVersion = "4.3.0";
 
         private const string HelpHelpText = "Usage: help {command}\nDescription: Prints help text for command";
         private const string JoinAsHelpText = "Usage: join_as {survivor} {player (optional)}\nDescription: Join in-progress run as the given survivor";
@@ -108,36 +108,16 @@ namespace DropInMultiplayer
 
         private static void Run_SetupUserCharacterMaster(On.RoR2.Run.orig_SetupUserCharacterMaster orig, Run self, NetworkUser user)
         {
-            // This method always throws null reference exception for new player joining after game starts, but not when called
-            // called again to spawn the player in after they use the join_as command
-            // This method throwing an uncaught exception causes the following lines in NetworkUser.Start not to be called:
-            //
-            //if (NetworkClient.active)
-            //{
-            //    SyncLunarCoinsToServer();
-            //    SendServerUnlockables();
-            //}
-            //
-            //OnLoadoutUpdated();
-            //NetworkUser.onPostNetworkUserStart?.Invoke(this);
-            //if (base.isLocalPlayer && (bool)Stage.instance)
-            //{
-            //    CallCmdAcknowledgeStage(Stage.instance.netId);
-            //}
-            //
-            // Which I believe causes issues like skins not being displayed to other users correct (OnLoadoutUpdated())
-            // So we are just going to go ahead and catch the exception. As far as I am aware this error is not caused by DropInMultiplayer being installed
-            // If anyone reads this and knows what causes this issue or a better fix for the issue feel free to send me a message
-
             try
             {
                 orig(self, user);
             }
-            catch (Exception ex)
+            catch (NullReferenceException ex)
             {
+                // RoR2 can throw this known exception while setting up a new participant mid-run. Swallow only
+                // that failure so NetworkUser.Start can finish its remaining synchronization callbacks.
                 Debug.LogException(ex);
-                Logger.LogError(ex);
-                Logger.LogMessage("SetupUserCharacterMaster threw an exception and was caught");
+                Logger.LogError($"Caught the known mid-run NullReferenceException in SetupUserCharacterMaster for {user?.userName ?? "an unknown user"}");
             }
         }
 
@@ -226,13 +206,24 @@ namespace DropInMultiplayer
         {
             player.CmdSetBodyPreference(newBodyIndex);
 
-            Run.instance.SetFieldValue("allowNewParticipants", true);
-            Run.instance.OnUserAdded(player);
-            Run.instance.SetFieldValue("allowNewParticipants", false);
+            Run run = Run.instance ?? throw new InvalidOperationException("Cannot add a player when no run is active");
+            run.SetFieldValue("allowNewParticipants", true);
+            try
+            {
+                run.OnUserAdded(player);
+            }
+            finally
+            {
+                run.SetFieldValue("allowNewParticipants", false);
+            }
 
+            if (player.master == null)
+            {
+                throw new InvalidOperationException($"Run.OnUserAdded did not create a character master for {player.userName}");
+            }
 
             Transform spawnTransform = GetSpawnTransformForPlayer(player);
-            player.master.SpawnBody(spawnTransform.position, spawnTransform.rotation);
+            player.master.Respawn(spawnTransform.position, spawnTransform.rotation);
 
             HandleBodyItems(player, null, BodyCatalog.GetBodyPrefab(newBodyIndex));
 
@@ -632,23 +623,23 @@ namespace DropInMultiplayer
                     return false;
                 }
 
-                // Should figure out at some point how to make this work, the following code will prevent player from joining as anything that
-                // wasn't unlocked by the players who started the run
+                // Unlocks are deliberately not checked against the host's run-wide unlocks. Entitlement and expansion
+                // availability are player-specific safety requirements, however, and must always be enforced.
                 //if (survivorDef.unlockableDef != null && !Run.instance.IsUnlockableUnlocked(survivorDef.unlockableDef))
                 //{
                 //    Logger.LogMessage($"Survivor {survivorDef.cachedName} is not availible because survivor is not unlocked");
                 //    return false;
                 //}
-                //if (survivorDef.CheckUserHasRequiredEntitlement(player))
-                //{
-                //    Logger.LogMessage($"Survivor {survivorDef.cachedName} is not availible because player does not have required entitlement");
-                //    return false;
-                //}
-                //if (!survivorDef.CheckRequiredExpansionEnabled())
-                //{
-                //    Logger.LogMessage($"Survivor {survivorDef.cachedName} is not availible because required expansion is not enabled");
-                //    return false;
-                //}
+                if (!survivorDef.CheckUserHasRequiredEntitlement(player))
+                {
+                    Logger.LogMessage($"Survivor {survivorDef.cachedName} is not availible because player does not have required entitlement");
+                    return false;
+                }
+                if (!survivorDef.CheckRequiredExpansionEnabled())
+                {
+                    Logger.LogMessage($"Survivor {survivorDef.cachedName} is not availible because required expansion is not enabled");
+                    return false;
+                }
 
                 return true;
             }
@@ -667,7 +658,7 @@ namespace DropInMultiplayer
             SurvivorDef[] availibleSurvivors = GetAvailibleSurvivorsForPlayer(player);
             if (string.Equals(name, "random", StringComparison.InvariantCultureIgnoreCase))
             {
-                return availibleSurvivors[_rand.Next(availibleSurvivors.Length)];
+                return availibleSurvivors.Length > 0 ? availibleSurvivors[_rand.Next(availibleSurvivors.Length)] : null;
             }
             else
             {
@@ -683,33 +674,63 @@ namespace DropInMultiplayer
 
         private static void GiveCatchUpItems(NetworkUser player)
         {
+            Inventory playerInventory = player?.master?.inventory;
+            Run run = Run.instance;
+            if (playerInventory == null || run == null)
+            {
+                Logger.LogWarning("Unable to give catch-up items because the player inventory or active run is unavailable");
+                return;
+            }
+
             List<PickupIndex> validCountItems = new List<PickupIndex>();
-            validCountItems.AddRange(Run.instance.availableTier1DropList);
-            validCountItems.AddRange(Run.instance.availableTier2DropList);
-            validCountItems.AddRange(Run.instance.availableTier3DropList);
+            AddPickups(validCountItems, run.availableTier1DropList);
+            AddPickups(validCountItems, run.availableTier2DropList);
+            AddPickups(validCountItems, run.availableTier3DropList);
 
-            validCountItems.AddRange(Run.instance.availableBossDropList);
+            AddPickups(validCountItems, run.availableBossDropList);
 
-            validCountItems.AddRange(Run.instance.availableVoidTier1DropList);
-            validCountItems.AddRange(Run.instance.availableVoidTier2DropList);
-            validCountItems.AddRange(Run.instance.availableVoidTier3DropList);
+            AddPickups(validCountItems, run.availableVoidTier1DropList);
+            AddPickups(validCountItems, run.availableVoidTier2DropList);
+            AddPickups(validCountItems, run.availableVoidTier3DropList);
 
-            validCountItems.AddRange(Run.instance.availableVoidBossDropList);
+            AddPickups(validCountItems, run.availableVoidBossDropList);
 
-            validCountItems.AddRange(Run.instance.availableLunarItemDropList);
+            AddPickups(validCountItems, run.availableLunarItemDropList);
+
+            // Hallowed, Hex, Page and Food drops are deliberately excluded. Those DLC4 item types are
+            // coupled to their own acquisition/cost mechanics and must not be granted as raw inventory items.
 
             Inventory[] activePlayerInventories = NetworkUser.readOnlyInstancesList.Where(netUser => netUser != player && netUser?.master?.inventory != null).Select(netUser => netUser.master.inventory).ToArray();
-            ItemIndex[] countItemIndexes = validCountItems.Select(pickupIndex => PickupCatalog.GetPickupDef(pickupIndex).itemIndex).ToArray();
+            if (activePlayerInventories.Length == 0)
+            {
+                Logger.LogMessage($"No other player inventories are available to calculate catch-up items for {player.userName}");
+                return;
+            }
+
+            ItemIndex[] countItemIndexes = validCountItems
+                .Select(PickupCatalog.GetPickupDef)
+                .Where(pickupDef => pickupDef != null && pickupDef.itemIndex != ItemIndex.None)
+                .Select(pickupDef => pickupDef.itemIndex)
+                .Distinct()
+                .ToArray();
 
             int averageItemCount = (int)activePlayerInventories.Average(CountInventoryItems);
-            int itemsToGive = averageItemCount - CountInventoryItems(player.master.inventory);
+            int itemsToGive = averageItemCount - CountInventoryItems(playerInventory);
 
             Logger.LogMessage($"On average other players have {averageItemCount} items, giving {player.userName} {itemsToGive} items to match");
-            GiveRandomItems(player.master.inventory, itemsToGive, DropInConfig.GiveCatchUpLunarItems.Value, DropInConfig.GiveCatchUpVoidItems.Value);
+            GiveRandomItems(playerInventory, itemsToGive, DropInConfig.GiveCatchUpLunarItems.Value, DropInConfig.GiveCatchUpVoidItems.Value);
 
             int CountInventoryItems(Inventory inventory)
             {
                 return countItemIndexes.Sum(itemIndex => inventory.GetItemCountPermanent(itemIndex));
+            }
+
+            void AddPickups(List<PickupIndex> destination, List<PickupIndex> source)
+            {
+                if (source != null)
+                {
+                    destination.AddRange(source);
+                }
             }
         }
 
@@ -722,37 +743,66 @@ namespace DropInMultiplayer
         /// <param name="voidEnabled">When enabled will add void items to the list picked from</param>
         private static void GiveRandomItems(Inventory inventory, int count, bool lunarEnabled, bool voidEnabled)
         {
-            if (count > 0)
+            if (inventory == null || count <= 0)
             {
-                WeightedSelection<List<PickupIndex>> weightedSelection = new WeightedSelection<List<PickupIndex>>();
-                weightedSelection.AddChoice(Run.instance.availableTier1DropList, 100f);
-                weightedSelection.AddChoice(Run.instance.availableTier2DropList, 60f);
-                weightedSelection.AddChoice(Run.instance.availableTier3DropList, 4f);
-                if (lunarEnabled)
+                return;
+            }
+
+            Run run = Run.instance;
+            if (run == null)
+            {
+                Logger.LogWarning("Unable to give random items because no run is active");
+                return;
+            }
+
+            WeightedSelection<List<PickupIndex>> weightedSelection = new WeightedSelection<List<PickupIndex>>();
+            bool hasChoices = false;
+            AddDropList(run.availableTier1DropList, 100f);
+            AddDropList(run.availableTier2DropList, 60f);
+            AddDropList(run.availableTier3DropList, 4f);
+            if (lunarEnabled)
+            {
+                AddDropList(run.availableLunarItemDropList, 4f);
+            }
+            if (voidEnabled)
+            {
+                AddDropList(run.availableVoidTier1DropList, 4f);
+                AddDropList(run.availableVoidTier2DropList, 2.39999986f);
+                AddDropList(run.availableVoidTier3DropList, 0.16f);
+            }
+
+            if (!hasChoices)
+            {
+                Logger.LogWarning("Unable to give random items because all enabled item drop lists are empty");
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                try
                 {
-                    weightedSelection.AddChoice(Run.instance.availableLunarItemDropList, 4f);
-                }
-                if (voidEnabled)
-                {
-                    weightedSelection.AddChoice(Run.instance.availableVoidTier1DropList, 4f);
-                    weightedSelection.AddChoice(Run.instance.availableVoidTier2DropList, 2.39999986f);
-                    weightedSelection.AddChoice(Run.instance.availableVoidTier3DropList, 0.16f);
-                }
-                for (int i = 0; i < count; i++)
-                {
-                    try
+                    List<PickupIndex> tierDropList = weightedSelection.Evaluate(UnityEngine.Random.value);
+                    PickupIndex itemPickupIndex = tierDropList[UnityEngine.Random.Range(0, tierDropList.Count)];
+                    ItemIndex itemIndex = PickupCatalog.GetPickupDef(itemPickupIndex)?.itemIndex ?? ItemIndex.None;
+                    if (itemIndex != ItemIndex.None)
                     {
-                        List<PickupIndex> tierDropList = weightedSelection.Evaluate(UnityEngine.Random.value);
-                        PickupIndex itemPickupIndex = tierDropList.ElementAtOrDefault(UnityEngine.Random.Range(0, tierDropList.Count));
-                        ItemIndex itemIndex = PickupCatalog.GetPickupDef(itemPickupIndex)?.itemIndex ?? ItemIndex.None;
                         inventory.GiveItemPermanent(itemIndex);
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.LogException(ex);
-                        Logger.LogError(ex);
-                        Logger.LogMessage("Exception occured giving player an item");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                    Logger.LogError(ex);
+                    Logger.LogMessage("Exception occured giving player an item");
+                }
+            }
+
+            void AddDropList(List<PickupIndex> dropList, float weight)
+            {
+                if (dropList != null && dropList.Count > 0)
+                {
+                    weightedSelection.AddChoice(dropList, weight);
+                    hasChoices = true;
                 }
             }
         }
@@ -781,7 +831,14 @@ namespace DropInMultiplayer
         private static IEnumerator SpawnPlayerAsRandomInternal(NetworkUser player)
         {
             yield return new WaitForSeconds(0.1f);
-            SpawnPlayerWithBody(player, BodyCatalog.FindBodyIndex(GetAvailibleSurvivorForPlayerByName(player, "random").bodyPrefab));
+            SurvivorDef survivor = GetAvailibleSurvivorForPlayerByName(player, "random");
+            if (survivor == null)
+            {
+                Logger.LogWarning($"Unable to spawn {player.userName} as random because no eligible survivors are available");
+                yield break;
+            }
+
+            SpawnPlayerWithBody(player, BodyCatalog.FindBodyIndex(survivor.bodyPrefab));
         }
 
         #endregion
