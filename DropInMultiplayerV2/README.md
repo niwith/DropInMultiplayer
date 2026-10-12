@@ -1,5 +1,5 @@
 # DropInMultiplayer
-The drop in multiplayer mod for Risk of Rain 2, now updated (hopefully) to work with Alloyed Collective!
+The drop in multiplayer mod for Risk of Rain 2, updated for Hallowed Concepts and Risk of Rain 2 1.5.0.
 This mod allows the host to have players join mid-game, and automatically gives them items to help them catch up!
 
 If you have any bug reports, ping me on the modding discord (@niwith on https://discord.gg/5MbXZvd), or feel free to private message me.
@@ -44,11 +44,20 @@ Note that in config options "enabled" is true and "disabled" is false.
 Also if updating from an old version of the mod, your old config may hang around, which may have different configraution, and some old no longer used config options. My suggestion is delete your old config file to avoid confusion.
 
 ### Known Issues
-* **DO NOT JOIN AS A DLC CHARACTER IF YOU DO NOT HAVE THE DLC** doing so may cause the game to freeze or crash
 * Ongoing game sometimes cannot be joined through steam - Unfortunetly I believe this is an issue outside of the scope of this mod, if anyone has more understanding of how steam networking works in RoR2 and what would fix the issue please let me know (or submit a pull request)
 * [WIP] Switching from Operator doesn't remove the drones that come as part of the character, working on a fix for this one just needs more work
 
+The survivor list and `join_as` command now require the selected player's DLC entitlement and an enabled expansion. Standard Hallowed Concepts items participate in normal catch-up counting and rewards through the regular tier lists. Hallowed items, Hexes, Pages, Meals and Curios are intentionally excluded because their DLC mechanics must not be bypassed by granting their inventory entries directly.
+
 # Changelog
+### 4.3.0
+* Updated game and hook references for Risk of Rain 2 1.5.0 and Hallowed Concepts
+* Added the RoR2BepInExPack 1.46.0 runtime dependency for current vanilla-client compatibility fixes
+* Prevented players from joining as survivors whose DLC they do not own or whose expansion is disabled
+* Ensured the temporary mid-run participant flag is restored even when player setup fails
+* Hardened catch-up rewards against missing inventories and empty or modded drop lists
+* Narrowed the mid-run character-master setup workaround so only the known null-reference failure is handled
+
 ### 4.2.1
 * Long time no update, fixed a couple bugs with a few merged pull requests
     * Thank you to @timlag1305 (https://github.com/timlag1305) for pull request "Fix null respawn, cleanup project build" (https://github.com/niwith/DropInMultiplayer/pull/26)
